@@ -4,6 +4,10 @@ import java.util.*;
 
 class HttpHeader {
 
+	/**
+	 * http header fields
+	 *
+	 */
 	public class HeaderFields extends LinkedHashMap<String, List<String>> {
 
 		Map<String, String> keymap = new HashMap<>();
@@ -27,6 +31,12 @@ class HttpHeader {
 
 	public void setFirstLine(String firstLine) {
 		this.firstLine = firstLine;
+	}
+
+	public String[] getFirstParts() {
+		String[] ret = firstLine.split("\\s+");
+		assert ret.length == 3;
+		return ret;
 	}
 	
 	public String getHeader(String name) {
