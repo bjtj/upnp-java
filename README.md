@@ -1,1 +1,1 @@
-# upnp-java
+# UPnP Java implementation
