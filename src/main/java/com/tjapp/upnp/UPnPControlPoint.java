@@ -22,7 +22,7 @@ class UPnPControlPoint {
 	public void msearch() {
 	}
 
-	public List<UPnPDevice> list() {
+	public List<UPnPDevice> candidates() {
 		return null;
 	}
 }

@@ -10,14 +10,30 @@ class UPnPServer {
 	public UPnPServer (int port) {
 		this.port = port;
 	}
-	
-	public void run() {
+
+	public void registerDevice(UPnPDevice device, boolean notify) {
+		
 	}
 
-	public void sendNotification() {
-		// alive
-		// update
-		// byebye
+	public void unregisterDevice(UPnPDevice device, boolean notify) {
+		
+	}
+	
+	public void run() {
+		
+	}
+
+	public void sendNotification(Notification notification) {
+		switch (notification) {
+		case ALIVE:
+			break;
+		case UPDATE:
+			break;
+		case BYEBYE:
+			break;
+		default:
+			break;
+		}
 	}
 
 	public List<UPnPDevice> list() {
