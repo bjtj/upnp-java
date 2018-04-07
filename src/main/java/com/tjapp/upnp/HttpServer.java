@@ -4,6 +4,10 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
+/**
+ * http server
+ *
+ */
 class HttpServer {
 
 	private Map<String, Handler> binder = new LinkedHashMap<>();
@@ -13,7 +17,7 @@ class HttpServer {
 	
 
 	/**
-	 * 
+	 * handler
 	 *
 	 */
 	public interface Handler {
@@ -21,7 +25,7 @@ class HttpServer {
 	}
 
 	/**
-	 * 
+	 * Constructor
 	 *
 	 */
 	public HttpServer () {
@@ -53,7 +57,11 @@ class HttpServer {
 		HttpClientThread t = new HttpClientThread(client);
 		t.start();
 	}
-	
+
+	/**
+	 * main
+	 *
+	 */
 	public static void main(String[] args) {
 		HttpServer server = new HttpServer(8080);
 		server.bind("/", new Handler() {
@@ -68,7 +76,7 @@ class HttpServer {
 
 	
 	/**
-	 * 
+	 * read write state
 	 *
 	 */
 	enum ReadWriteState {
@@ -76,7 +84,7 @@ class HttpServer {
 	}
 
 	/**
-	 * 
+	 * http client thread
 	 *
 	 */
 	private class HttpClientThread extends Thread {

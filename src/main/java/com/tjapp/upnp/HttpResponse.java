@@ -29,4 +29,8 @@ class HttpResponse {
 		this.data = data;
 		header.setHeader("Content-Length", Integer.toString(data.length));
 	}
+
+	public byte[] getData() {
+		return data;
+	}
 }

@@ -37,5 +37,9 @@ public class TestHttpServer {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
 		String line = reader.readLine();
 		assertEquals(line, "hello");
+
+		HttpClient client = new HttpClient();
+		byte[] ret = client.doGet(new URL("http://localhost:9900/"));
+		assertEquals(new String(ret), "hello");
 	}
 }
