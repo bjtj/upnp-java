@@ -5,6 +5,8 @@ import org.junit.*;
 
 public class TestSSDP {
 
+	private static Logger logger = Logger.getLogger("TestSSDP");
+
 	@Test
 	public void test_ssdp_header() {
 		String[] tokens = "NOTIFY * HTTP/1.1".split("\\s+");
@@ -34,6 +36,6 @@ public class TestSSDP {
 			sender.pending(10);
 		}
 		sender.close();
-		System.out.printf("Received: %d\n", sender.getList().size());
+		logger.debug(String.format("Received: %d", sender.getList().size()));
 	}
 }

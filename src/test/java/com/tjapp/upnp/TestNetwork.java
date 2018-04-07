@@ -5,6 +5,8 @@ import org.junit.*;
 
 public class TestNetwork {
 
+	private static Logger logger = Logger.getLogger("TestNetwork");
+
 	public String bytesToString(byte[] data) {
 		if (data == null) {
 			return "";
@@ -23,8 +25,9 @@ public class TestNetwork {
 	public void test_ifaces() throws Exception {
 		String[] ifaces = NetworkManager.ifaceNames();
 		for (String iface : ifaces) {
-			System.out.printf("[%s]\n", iface);
-			System.out.printf("* MAC - '%s'\n", bytesToString(NetworkManager.getMacAddress(iface)));
+			
+			logger.debug(String.format("[%s]", iface));
+			logger.debug(String.format("* MAC - '%s'", bytesToString(NetworkManager.getMacAddress(iface))));
 		}
 	}
 }

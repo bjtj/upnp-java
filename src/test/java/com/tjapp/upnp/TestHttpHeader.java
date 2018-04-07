@@ -5,6 +5,9 @@ import org.junit.Test;
 import com.tjapp.upnp.*;
 
 public class TestHttpHeader {
+
+	private static Logger logger = Logger.getLogger("TestHttpHeader");
+	
 	@Test
 	public void test_header_string() {
 		HttpHeader header = new HttpHeader();

@@ -12,6 +12,7 @@ class SSDPServer {
 	private int port;
 	private MulticastSocket sock;
 	private boolean done;
+	private static Logger logger = Logger.getLogger("SSDPServer");
 
 	public SSDPServer (int port) {
 		this.port = port;
@@ -42,6 +43,6 @@ class SSDPServer {
 		HttpHeaderParser parser = new HttpHeaderParser();
 		String text = new String(packet.getData(), 0, packet.getLength());
 		HttpHeader header = parser.parse(text);
-		System.out.println(header.toString());
+		logger.debug(header.toString());
 	}
 }

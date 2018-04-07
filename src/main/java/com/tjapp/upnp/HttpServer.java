@@ -6,18 +6,24 @@ import java.net.*;
 
 class HttpServer {
 
-	private Map<String, Handler> binding = new LinkedHashMap<>();
+	private Map<String, Handler> binder = new LinkedHashMap<>();
 	private int port;
 	private boolean done;
+	private static Logger logger = Logger.getLogger("HttpServer");
+	
 
-	private static void logd(String msg) {
-		System.out.println(msg);
+	/**
+	 * 
+	 *
+	 */
+	public interface Handler {
+		public HttpResponse handle(HttpRequest request);
 	}
 
-	private interface Handler {
-		public Response handle(Request request);
-	}
-
+	/**
+	 * 
+	 *
+	 */
 	public HttpServer () {
 		this.port = 80;
 	}
@@ -27,7 +33,7 @@ class HttpServer {
 	}
 	
 	public void bind(String pattern, Handler handler) {
-		binding.put(pattern, handler);
+		binder.put(pattern, handler);
 	}
 	
 	public void run() {
@@ -51,8 +57,8 @@ class HttpServer {
 	public static void main(String[] args) {
 		HttpServer server = new HttpServer(8080);
 		server.bind("/", new Handler() {
-				public Response handle(Request request) {
-					Response response = new Response();
+				public HttpResponse handle(HttpRequest request) {
+					HttpResponse response = new HttpResponse();
 					response.setData("hello".getBytes());
 					return response;
 				}
@@ -60,56 +66,19 @@ class HttpServer {
 		server.run();
 	}
 
-	private static class Request {
-		public HttpHeader header;
-		public byte[] buffer;
-
-		public String getPath() {
-            return header.getFirstParts()[1];
-		}
-
-		public int getContentLength() {
-			String len = header.getHeader("Content-Length");
-			return (len == null ? -1 : Integer.parseInt(len));
-		}
-
-		public String getContentType() {
-			return header.getHeader("Content-Type");
-		}
-	}
-
-	private static class Response {
-		public HttpHeader header;
-		public byte[] data;
-		
-		public Response () {
-			this.header = new HttpHeader();
-			this.header.setFirstLine("HTTP/1.1 200 OK");
-		}
-		
-		public Response (HttpHeader header, byte[] data) {
-			this.header = header;
-			this.data = data;
-		}
-		public int getContentLength() {
-			String len = header.getHeader("Content-Length");
-			return (len == null ? -1 : Integer.parseInt(len));
-		}
-
-		public String getContentType() {
-			return header.getHeader("Content-Type");
-		}
-
-		public void setData(byte[] data) {
-			this.data = data;
-			header.setHeader("Content-Length", Integer.toString(data.length));
-		}
-	}
-
+	
+	/**
+	 * 
+	 *
+	 */
 	enum ReadWriteState {
 		READ_HEADER, READ_BODY, WRITE_HEADER, WRITE_BODY;
 	}
 
+	/**
+	 * 
+	 *
+	 */
 	private class HttpClientThread extends Thread {
 		
 		private Socket client;
@@ -126,8 +95,8 @@ class HttpServer {
 				OutputStream out = client.getOutputStream();
 				ReadWriteState readWriteState = ReadWriteState.READ_HEADER;
 				int length = 0;
-				Request request = new Request();
-				Response response = null;
+				HttpRequest request = new HttpRequest();
+				HttpResponse response = null;
 				int write_len = 0;
 				int c = -1;
 				while (done == false) {
@@ -143,7 +112,7 @@ class HttpServer {
 					case READ_HEADER:
 						sb.append((char)c);
 						if (sb.indexOf("\r\n\r\n") > 0) {
-							logd(sb.toString());
+							logger.debug(sb.toString());
 							request.header = parseHeader(sb.toString());
 							length = request.getContentLength();
 							if (length > 0) {
@@ -180,7 +149,7 @@ class HttpServer {
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
-				logd("[connection close]");
+				logger.debug("[connection close]");
 				try {
 					client.close();
 				} catch (Exception e) {
@@ -188,14 +157,22 @@ class HttpServer {
 			}
 		}
 
-		public Response handle(Request request) {
-			Handler handler = binding.get(request.getPath());
+		/**
+		 * 
+		 *
+		 */
+		public HttpResponse handle(HttpRequest request) {
+			Handler handler = binder.get(request.getPath());
 			if (handler != null) {
 				return handler.handle(request);
 			}
-            return new Response();
+            return new HttpResponse();
 		}
 
+		/**
+		 * 
+		 *
+		 */
 		public HttpHeader parseHeader(String headerString) {
             HttpHeaderParser parser = new HttpHeaderParser();
 			return parser.parse(headerString);
