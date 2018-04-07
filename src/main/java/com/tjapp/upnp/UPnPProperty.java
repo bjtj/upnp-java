@@ -77,7 +77,7 @@ class UPnPProperty {
 		return sb.toString();
 	}
 
-	public String concat(String a, String b) {
+	private String concat(String a, String b) {
 		if (a.isEmpty()) {
 			return a;
 		}
@@ -87,8 +87,12 @@ class UPnPProperty {
 		return a + " " + b;
 	}
 
-	public String toString() {
+	public String toXml() {
 		return String.format("<%s>%s</%s>", concat(name, getAttributeString()), value, name);
+	}
+
+	public String toString() {
+		return toXml();
 	}
 
 	public static void main(String[] args) {
