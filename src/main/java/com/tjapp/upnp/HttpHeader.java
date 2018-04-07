@@ -23,7 +23,7 @@ class HttpHeader {
 	}
 
 	private String firstLine;
-	private HeaderFields headers = new HeaderFields();
+	private HeaderFields headerFields = new HeaderFields();
 
 	public String getFirstLine() {
 		return firstLine;
@@ -40,58 +40,69 @@ class HttpHeader {
 	}
 	
 	public String getHeader(String name) {
-		List<String> values = headers.get(name);
+		List<String> values = headerFields.get(name);
 		if (values != null && values.size() > 0) {
 			return values.get(0);
 		}
 		return null;
 	}
 	public String[] getHeaders(String name) {
-		List<String> values = headers.get(name);
+		List<String> values = headerFields.get(name);
 		if (values != null) {
 			return values.toArray(new String[values.size()]);
 		}
 		return null;
 	}
 	public void setHeader(String name, String value) {
-		List<String> values = headers.get(name);
+		List<String> values = headerFields.get(name);
 		if (values == null) {
 			values = new ArrayList();
 			values.add(value);
-			headers.put(name, values);
+			headerFields.put(name, values);
 		} else {
 			values.clear();
 			values.add(value);
 		}
 	}
 	public void setHeaders(String name, String[] values) {
-		headers.put(name, new ArrayList<>(Arrays.asList(values)));
+		headerFields.put(name, new ArrayList<>(Arrays.asList(values)));
 	}
 	public void appendHeader(String name, String value) {
-		List<String> values = headers.get(name);
+		List<String> values = headerFields.get(name);
 		if (values == null) {
 			values = new ArrayList();
 			values.add(value);
-			headers.put(name, values);
+			headerFields.put(name, values);
 		} else {
 			values.add(value);
 		}
 	}
+	
 	public void removeHeader(String name) {
-		headers.remove(name);
+		headerFields.remove(name);
 	}
+
+	public HeaderFields getHeaderFields() {
+		return headerFields;
+	}
+	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(firstLine + "\r\n");
-		Iterator<String> iter = headers.keySet().iterator();
+		Iterator<String> iter = headerFields.keySet().iterator();
 		while (iter.hasNext()) {
 			String key = iter.next();
-			List<String> values = headers.get(key);
+			List<String> values = headerFields.get(key);
 			for (String value : values) {
 				sb.append(key + ": " + value + "\r\n");
 			}
 		}
 		sb.append("\r\n");
 		return sb.toString();
+	}
+
+	public void copy(HttpHeader header) {
+		firstLine = header.getFirstLine();
+		headerFields = header.getHeaderFields();
 	}
 }

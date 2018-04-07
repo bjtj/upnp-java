@@ -2,7 +2,7 @@ package com.tjapp.upnp;
 
 class HttpHeaderParser {
 
-	public String[] parseHeaderField(String line) {
+	public static String[] parseHeaderField(String line) {
 		int idx = line.indexOf(":");
 		if (idx >= 0) {
 			String key = line.substring(0, idx);
@@ -12,7 +12,7 @@ class HttpHeaderParser {
 		return new String[]{line, null};
 	}
 
-	public HttpHeader parse(String text) {
+	public static HttpHeader parse(String text) {
 		HttpHeader header = new HttpHeader();
 		String[] lines = text.split("\r\n");
 		header.setFirstLine(lines[0]);
