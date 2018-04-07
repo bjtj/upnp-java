@@ -8,6 +8,7 @@ class UPnPControlPoint {
 
 	private static Logger logger = Logger.getLogger("UPnPControlPoint");
 	private int port;
+	private Map<String, UPnPDeviceSession> sessions = new HashMap<>();
 	
 	public UPnPControlPoint (int port) {
 		this.port = port;
@@ -22,18 +23,43 @@ class UPnPControlPoint {
 	public void unsubscribeEvent() {
 	}
 
-	public void msearch(String query) throws IOException {
-		SSDPMsearchSender sender = new SSDPMsearchSender(query, 5);
+	public void msearch(String query, int mx) throws IOException {
+		SSDPMsearchSender sender = new SSDPMsearchSender(query, mx);
 		sender.send();
 		while (sender.timeout() == false) {
 			sender.pending(10);
 		}
 		sender.close();
-		logger.debug(String.format("Received: %d", sender.getList().size()));
+		List<SSDPHeader> list = sender.getList();
+		for (SSDPHeader header : list) {
+			dispatch(header);
+		}
+	}
+
+	private void dispatch(SSDPHeader header) {
+		UPnPDeviceBuilder builder = UPnPDeviceBuilder.getInstance();
+		try {
+			Usn usn = Usn.fromString(header.getHeader("usn"));
+			if (sessions.get(usn.getUuid()) != null) {
+				return;
+			}
+			UPnPDeviceSession session = new UPnPDeviceSession(usn.getUuid());
+			session.setDevice(builder.build(header.getHeader("location")));
+			session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
+			sessions.put(usn.getUuid(), session);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public List<UPnPDeviceSession> candidates() {
-		return null;
+		List<UPnPDeviceSession> list = new ArrayList<>();
+		Iterator<String> keys = sessions.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			list.add(sessions.get(key));
+		}
+		return list;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -46,14 +72,13 @@ class UPnPControlPoint {
 
 		UPnPControlPoint cp = new UPnPControlPoint(9090);
 
-		cp.msearch("ssdp:all");
+		cp.msearch("ssdp:all", 5);
 
 		List<UPnPDeviceSession> sessions = cp.candidates();
 		for (UPnPDeviceSession session : sessions) {
-
 			switch (session.getStatus()) {
 			case PENDING:
-				System.out.println("[pending] not ready yet");
+				logger.debug("[pending] not ready yet - " + session.getDevice().getFriendlyName());
 				break;
 			case COMPLETE:
 				if (session.getDeviceType().equals("urn:schemas-upnp-org:device:BinaryLight:1")) {
@@ -61,6 +86,12 @@ class UPnPControlPoint {
 					UPnPActionRequest request = new UPnPActionRequest(service.getAction("SetTarget"));
 					request.setParameter("NewTargetValue", "1");
 					UPnPActionResponse resp = session.invokeAction(request);
+				} else {
+					logger.debug(session.getDevice().getFriendlyName());
+					List<UPnPService> services = session.getDevice().getServiceList();
+					for (UPnPService service : services) {
+						logger.debug("- service name: " + service.getServiceType());
+					}
 				}
 				break;
 			default:

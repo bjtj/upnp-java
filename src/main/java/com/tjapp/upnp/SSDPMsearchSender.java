@@ -100,6 +100,7 @@ class SSDPMsearchSender {
 		List<SSDPHeader> list = sender.getList();
 		for (SSDPHeader item : list) {
 			logger.debug(item.getHeader("usn"));
+			logger.debug(" - " + item.getHeader("location"));
 		}
 		logger.debug("[done]");
 	}

@@ -1,17 +1,38 @@
 package com.tjapp.upnp;
 
+import java.util.*;
+import org.w3c.dom.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
+
 
 public class UPnPService {
 
 	private UPnPScpd scpd;
-	private String serviceType;
+	private Map<String, UPnPProperty> properties = new LinkedHashMap<>();
 
     public String getServiceType() {
-		return serviceType;
+		return properties.get("serviceType").getValue();
 	}
 
-	public void setServiceType(String serviceType) {
-		this.serviceType = serviceType;
+	public String getServiceId() {
+		return properties.get("serviceId").getValue();
+	}
+
+	public String getScpdUrl() {
+		return properties.get("SCPDURL").getValue();
+	}
+
+	public String getControlUrl() {
+		return properties.get("controlURL").getValue();
+	}
+
+	public String getEventSubUrl() {
+		return properties.get("eventSubURL").getValue();
+	}
+
+	public void setProperty(UPnPProperty property) {
+		properties.put(property.getName(), property);
 	}
 
 	public UPnPAction getAction(String name) {
@@ -24,5 +45,18 @@ public class UPnPService {
 
 	public void setScpd(UPnPScpd scpd) {
 		this.scpd = scpd;
+	}
+
+	public static UPnPService fromNodeList(NodeList nodeList) {
+		UPnPService service = new UPnPService();
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			Node first = node.getFirstChild();
+			if (node.getChildNodes().getLength() == 1 && first.getNodeName().equals("#text")) {
+				UPnPProperty property = new UPnPProperty(node.getNodeName(), first.getNodeValue());
+				service.setProperty(property);
+			}
+		}
+		return service;
 	}
 }

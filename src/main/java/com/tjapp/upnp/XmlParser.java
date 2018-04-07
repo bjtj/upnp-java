@@ -9,7 +9,7 @@ import org.xml.sax.helpers.*;
 
 class XmlParser {
 
-	Document parse(String textXml) throws Exception {
+	public static Document parse(String textXml) throws Exception {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document document = builder.parse(new InputSource(new StringReader(textXml)));
