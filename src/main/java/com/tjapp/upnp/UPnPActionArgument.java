@@ -1,11 +1,14 @@
 package com.tjapp.upnp;
 
+import org.w3c.dom.*;
+import org.xml.sax.*;
+import org.xml.sax.helpers.*;
 
 class UPnPActionArgument {
 	
 	private String name;
-	private String stateVariable;
 	private UPnPActionArgumentDirection direction;
+	private String relatedStateVariable;
 
 	public String getName() {
 		return name;
@@ -15,12 +18,12 @@ class UPnPActionArgument {
 		this.name = name;
 	}
 
-	public String getStateVariable() {
-		return stateVariable;
+	public String getRelatedStateVariable() {
+		return relatedStateVariable;
 	}
 
-	public void setStateVariable(String stateVariable) {
-		this.stateVariable = stateVariable;
+	public void setRelatedStateVariable(String relatedStateVariable) {
+		this.relatedStateVariable = relatedStateVariable;
 	}
 
 	public UPnPActionArgumentDirection getDirection() {
@@ -29,5 +32,22 @@ class UPnPActionArgument {
 
 	public void setDirection(UPnPActionArgumentDirection direction) {
 		this.direction = direction;
+	}
+
+	public static UPnPActionArgument fromNode(Node actionArgumentNode) {
+		UPnPActionArgument argument = new UPnPActionArgument();
+		NodeList list = actionArgumentNode.getChildNodes();
+		for (int i = 0; i < list.getLength(); i++) {
+			Node node = list.item(i);
+			String name = node.getNodeName();
+			if (name.equals("name")) {
+				argument.setName(node.getFirstChild().getNodeValue());
+			} else if (name.equals("direction")) {
+				argument.setDirection(node.getFirstChild().getNodeValue().equals("in") ? UPnPActionArgumentDirection.IN : UPnPActionArgumentDirection.OUT);
+			} else if (name.equals("relatedStateVariable")) {
+				argument.setRelatedStateVariable(node.getFirstChild().getNodeValue());
+			}
+		}
+		return argument;
 	}
 }

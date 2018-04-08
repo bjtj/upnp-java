@@ -15,7 +15,7 @@ class UPnPDeviceSession {
 	}
 
 	public String getDeviceType() {
-		return "";
+		return device.getDeviceType();
 	}
 
 	public UPnPActionResponse invokeAction(UPnPActionRequest request) {
@@ -31,7 +31,7 @@ class UPnPDeviceSession {
 	}
 
 	public UPnPService getService(String serviceType) {
-		return null;
+		return device.getService(serviceType);
 	}
 
 	public boolean expired() {

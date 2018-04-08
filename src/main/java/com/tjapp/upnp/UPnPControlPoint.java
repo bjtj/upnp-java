@@ -81,16 +81,28 @@ public class UPnPControlPoint {
 				logger.debug("[pending] not ready yet - " + session.getDevice().getFriendlyName());
 				break;
 			case COMPLETE:
+				logger.debug("device: " + session.getDevice().getFriendlyName() + " / " + session.getDeviceType());
 				if (session.getDeviceType().equals("urn:schemas-upnp-org:device:BinaryLight:1")) {
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:SwitchPower:1");
 					UPnPActionRequest request = new UPnPActionRequest(service.getAction("SetTarget"));
 					request.setParameter("NewTargetValue", "1");
 					UPnPActionResponse resp = session.invokeAction(request);
+				} else if (session.getDeviceType().equals("urn:schemas-upnp-org:device:MediaServer:1")) {
+					List<UPnPService> services = session.getDevice().getServiceList();
+					UPnPService service = session.getService("urn:schemas-upnp-org:service:ContentDirectory:1");
+					UPnPActionRequest request = new UPnPActionRequest(service.getAction("Browse"));
+					request.setParameter("ObjectID", "0");
+					request.setParameter("BrowseFlag", "BrowseDirectChildren");
+					request.setParameter("Filter", "*");
+					request.setParameter("StartingIndex", "0");
+					request.setParameter("RequestedCount", "0");
+					request.setParameter("SortCriteria", "");
+					UPnPActionResponse resp = session.invokeAction(request);
+					logger.debug("[invoke action]");
 				} else {
-					logger.debug(session.getDevice().getFriendlyName());
 					List<UPnPService> services = session.getDevice().getServiceList();
 					for (UPnPService service : services) {
-						logger.debug("- service name: " + service.getServiceType());
+						logger.debug("- service type: " + service.getServiceType());
 					}
 				}
 				break;
@@ -100,3 +112,4 @@ public class UPnPControlPoint {
 		}
 	}
 }
+

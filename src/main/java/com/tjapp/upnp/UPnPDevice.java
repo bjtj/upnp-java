@@ -26,6 +26,10 @@ class UPnPDevice {
 		return properties.get("friendlyName").getValue();
 	}
 
+	public String getDeviceType() {
+		return properties.get("deviceType").getValue();
+	}
+
 	public void setProperty(UPnPProperty property) {
 		properties.put(property.getName(), property);
 	}
@@ -48,6 +52,16 @@ class UPnPDevice {
 
 	public void removeService(UPnPService service) {
 		services.remove(service);
+	}
+
+	public UPnPService getService(String serviceType) {
+		for (UPnPService service : services) {
+			logger.debug("service type: " + service.getServiceType());
+			if (service.getServiceType().equals(serviceType)) {
+				return service;
+			}
+		}
+		return null;
 	}
 
 	public List<UPnPService> getServiceList() {
