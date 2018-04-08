@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 
-class UPnPControlPoint {
+public class UPnPControlPoint {
 
 	private static Logger logger = Logger.getLogger("UPnPControlPoint");
 	private int port;
