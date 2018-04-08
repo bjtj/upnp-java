@@ -44,6 +44,7 @@ public class UPnPControlPoint {
 				return;
 			}
 			UPnPDeviceSession session = new UPnPDeviceSession(usn.getUuid());
+			session.setBaseUrl(header.getHeader("location"));
 			session.setDevice(builder.build(header.getHeader("location")));
 			session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
 			sessions.put(usn.getUuid(), session);
@@ -84,13 +85,13 @@ public class UPnPControlPoint {
 				logger.debug("device: " + session.getDevice().getFriendlyName() + " / " + session.getDeviceType());
 				if (session.getDeviceType().equals("urn:schemas-upnp-org:device:BinaryLight:1")) {
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:SwitchPower:1");
-					UPnPActionRequest request = new UPnPActionRequest(service.getAction("SetTarget"));
+					UPnPActionRequest request = new UPnPActionRequest(service, "SetTarget");
 					request.setParameter("NewTargetValue", "1");
 					UPnPActionResponse resp = session.invokeAction(request);
 				} else if (session.getDeviceType().equals("urn:schemas-upnp-org:device:MediaServer:1")) {
 					List<UPnPService> services = session.getDevice().getServiceList();
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:ContentDirectory:1");
-					UPnPActionRequest request = new UPnPActionRequest(service.getAction("Browse"));
+					UPnPActionRequest request = new UPnPActionRequest(service, "Browse");
 					request.setParameter("ObjectID", "0");
 					request.setParameter("BrowseFlag", "BrowseDirectChildren");
 					request.setParameter("Filter", "*");

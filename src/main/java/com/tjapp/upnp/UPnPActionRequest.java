@@ -5,11 +5,25 @@ import java.util.*;
 
 class UPnPActionRequest {
 
+	private UPnPService service;
 	private UPnPAction action;
 	private Map<String, String> parameters = new LinkedHashMap<>();
 
-	public UPnPActionRequest (UPnPAction action) {
-		this.action = action;
+	public UPnPActionRequest (UPnPService service, String actionName) {
+		this.service = service;
+		this.action = service.getAction(actionName);
+	}
+
+	public String getScpdUrl() {
+		return service.getScpdUrl();
+	}
+
+	public void setService(UPnPService service) {
+		this.service = service;
+	}
+
+	public UPnPService getService() {
+		return service;
 	}
 
 	public UPnPAction getAction() {
@@ -38,5 +52,9 @@ class UPnPActionRequest {
 
 	public void removeParameter(String key) {
 		parameters.remove(key);
+	}
+
+	public String toSoap() {
+		return null;
 	}
 }

@@ -25,4 +25,9 @@ class UPnPActionResponse {
 	public void removeParameter(String key) {
 		parameters.remove(key);
 	}
+
+	public static UPnPActionResponse fromXml(String xml) {
+		UPnPActionResponse response = new UPnPActionResponse();
+		return response;
+	}
 }

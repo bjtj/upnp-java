@@ -1,5 +1,7 @@
 package com.tjapp.upnp;
 
+import java.net.*;
+
 
 class UPnPDeviceSession {
 
@@ -18,8 +20,8 @@ class UPnPDeviceSession {
 		return device.getDeviceType();
 	}
 
-	public UPnPActionResponse invokeAction(UPnPActionRequest request) {
-		return null;
+	public UPnPActionResponse invokeAction(UPnPActionRequest request) throws Exception {
+		return UPnPActionInvoke.invoke(new URL(baseUrl), request);
 	}
 
 	public UPnPDevice getDevice() {
