@@ -48,6 +48,10 @@ public class UPnPControlPoint {
 			session.setDevice(builder.build(header.getHeader("location")));
 			session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
 			sessions.put(usn.getUuid(), session);
+		} catch (FileNotFoundException e) {
+			logger.error("file not found: " + e.getMessage());
+		} catch (IOException e) {
+			logger.error("io exception: " + e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -73,7 +77,7 @@ public class UPnPControlPoint {
 
 		UPnPControlPoint cp = new UPnPControlPoint(9090);
 
-		cp.msearch("ssdp:all", 5);
+		cp.msearch("ssdp:all", 3);
 
 		List<UPnPDeviceSession> sessions = cp.candidates();
 		for (UPnPDeviceSession session : sessions) {
@@ -91,6 +95,7 @@ public class UPnPControlPoint {
 				} else if (session.getDeviceType().equals("urn:schemas-upnp-org:device:MediaServer:1")) {
 					List<UPnPService> services = session.getDevice().getServiceList();
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:ContentDirectory:1");
+
 					UPnPActionRequest request = new UPnPActionRequest(service, "Browse");
 					request.setParameter("ObjectID", "0");
 					request.setParameter("BrowseFlag", "BrowseDirectChildren");

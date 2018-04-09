@@ -33,7 +33,7 @@ class UPnPAction {
 			Node node = list.item(i);
 			String name = node.getNodeName();
 			if (name.equals("name")) {
-				action.setName(name);
+				action.setName(node.getFirstChild().getNodeValue());
 			} else if (name.equals("argumentList")) {
 				NodeList argumentNodeList = node.getChildNodes();
 				for (int j = 0; j < argumentNodeList.getLength(); j++) {

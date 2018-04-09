@@ -12,10 +12,13 @@ class UPnPActionRequest {
 	public UPnPActionRequest (UPnPService service, String actionName) {
 		this.service = service;
 		this.action = service.getAction(actionName);
+		if (action == null) {
+			throw new IllegalArgumentException("no action found - " + actionName);
+		}
 	}
 
-	public String getScpdUrl() {
-		return service.getScpdUrl();
+	public String getControlUrl() {
+		return service.getControlUrl();
 	}
 
 	public void setService(UPnPService service) {
@@ -55,6 +58,6 @@ class UPnPActionRequest {
 	}
 
 	public String toSoap() {
-		return null;
+		return UPnPSoap.toXml(this);
 	}
 }

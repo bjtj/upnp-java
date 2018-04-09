@@ -26,14 +26,14 @@ class UPnPDeviceBuilder {
 	public UPnPDevice build(String location) throws Exception {
 		HttpClient client = new HttpClient();
 		URL url = new URL(location);
-		byte[] data = client.doGet(url);
-		String deviceDescription = new String(data);
+		HttpResponse response = client.doGet(url);
+		String deviceDescription = response.text();
 		UPnPDevice device = UPnPDevice.fromXml(deviceDescription);
 		List<UPnPService> services = device.getServiceList();
 		for (UPnPService service : services) {
 			URL scpdUrl = new URL(url, service.getScpdUrl());
 			logger.debug("scpd url: " + scpdUrl);
-			String scpdXml = new String(client.doGet(scpdUrl));
+			String scpdXml = client.doGet(scpdUrl).text();
 			service.setScpd(UPnPScpd.fromXml(scpdXml));
 		}
 		return device;

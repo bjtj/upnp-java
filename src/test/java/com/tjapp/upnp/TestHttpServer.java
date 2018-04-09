@@ -39,7 +39,7 @@ public class TestHttpServer {
 		assertEquals(line, "hello");
 
 		HttpClient client = new HttpClient();
-		byte[] ret = client.doGet(new URL("http://localhost:9900/"));
-		assertEquals(new String(ret), "hello");
+		HttpResponse response = client.doGet(new URL("http://localhost:9900/"));
+		assertEquals(response.text(), "hello");
 	}
 }

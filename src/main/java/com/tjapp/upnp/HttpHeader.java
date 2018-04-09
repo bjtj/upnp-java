@@ -4,6 +4,8 @@ import java.util.*;
 
 class HttpHeader {
 
+	private static Logger logger = Logger.getLogger("HttpHeader");
+
 	/**
 	 * http header fields
 	 *
@@ -19,6 +21,11 @@ class HttpHeader {
 		}
 		public List<String> get(String key) {
             return super.get(keymap.get(key.toLowerCase()));
+		}
+		@Override
+		public void clear() {
+			super.clear();
+			keymap.clear();
 		}
 	}
 
@@ -67,6 +74,11 @@ class HttpHeader {
 	public void setHeaders(String name, String[] values) {
 		headerFields.put(name, new ArrayList<>(Arrays.asList(values)));
 	}
+
+	public void setHeaders(String name, List<String> values) {
+		headerFields.put(name, values);
+	}
+	
 	public void appendHeader(String name, String value) {
 		List<String> values = headerFields.get(name);
 		if (values == null) {
@@ -84,6 +96,17 @@ class HttpHeader {
 
 	public HeaderFields getHeaderFields() {
 		return headerFields;
+	}
+
+	public void setHeaderFields(Map<String, List<String>> headerFields) {
+		this.headerFields.clear();
+		Iterator<String> keys = headerFields.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			if (key != null) {
+				this.headerFields.put(key, new ArrayList<String>(headerFields.get(key)));
+			}
+		}
 	}
 	
 	public String toString() {
