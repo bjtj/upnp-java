@@ -26,7 +26,7 @@ class HttpClient {
 		return config;
 	}
 
-	private void setHeaderFIelds(HttpURLConnection conn, Map<String, String> headers) {
+	private void setHeaderFields(HttpURLConnection conn, Map<String, String> headers) {
 		if (headers == null) {
 			return;
 		}
@@ -44,7 +44,7 @@ class HttpClient {
 	public HttpResponse doGet(URL url, Map<String, String> headers) throws IOException {
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 		conn.setFollowRedirects(config.getRedirect());
-		setHeaderFIelds(conn, headers);
+		setHeaderFields(conn, headers);
 		return HttpResponse.fromConnection(conn);
 	}
 
@@ -56,7 +56,7 @@ class HttpClient {
 		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 		conn.setDoOutput(true);
 		conn.setFollowRedirects(config.getRedirect());
-		setHeaderFIelds(conn, headers);
+		setHeaderFields(conn, headers);
 		OutputStream out = conn.getOutputStream();
 		out.write(data);
 		return HttpResponse.fromConnection(conn);
