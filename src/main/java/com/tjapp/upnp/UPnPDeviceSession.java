@@ -16,6 +16,10 @@ class UPnPDeviceSession {
 		this.uuid = uuid;
 	}
 
+	public String getUdn() {
+		return device.getUdn();
+	}
+
 	public String getDeviceType() {
 		return device.getDeviceType();
 	}

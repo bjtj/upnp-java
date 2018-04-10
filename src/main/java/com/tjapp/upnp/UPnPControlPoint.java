@@ -9,41 +9,107 @@ public class UPnPControlPoint {
 	private static Logger logger = Logger.getLogger("UPnPControlPoint");
 	private int port;
 	private Map<String, UPnPDeviceSession> sessions = new HashMap<>();
-	private Map<String, UPnPDeviceSession> subscriptions = new HashMap<>();
+	private Map<String, UPnPEventSubscription> subscriptions = new HashMap<>();
 	private HttpServer httpServer;
 	private boolean finishing;
+	private TimerThread timerThread;
 
 	private class TimerThread extends Thread {
 		private UPnPControlPoint cp;
-		public TimerThread (UPnPControlPoint cp) {
+		private boolean paused;
+		private long tick;
+		private long interval;
+		public TimerThread (UPnPControlPoint cp, long interval) {
 			this.cp = cp;
+			this.interval = interval;
+		}
+		public void finish() {
+			this.interrupt();
+			finishing = true;
 		}
 		public void run() {
 			try {
+				this.tick = Clock.getTickMilli();
 				while (Thread.interrupted() == false && finishing == false) {
-					Thread.sleep(10);
+					if (Clock.getTickMilli() - tick >= interval) {
+						cp.onTimer();
+					} else {
+						Thread.sleep(10);
+					}
 				}
 			} catch (InterruptedException e) {
 				// 
 			}
+			logger.debug("[timer thread] done");
 		}
 	}
 	
 	public UPnPControlPoint (int port) {
 		this.port = port;
-		httpServer = new HttpServer(port);
 	}
 	
 	public void run() {
+		timerThread = new TimerThread(this, 10 * 1000);
+		timerThread.start();
+		httpServer = new HttpServer(port);
+		httpServer.run();
+	}
+
+	public void stop() {
+		timerThread.finish();
+		timerThread = null;
+		httpServer.stop();
+	}
+
+	public Runnable getRunnable() {
+		return new Runnable() {
+			public void run() {
+				UPnPControlPoint.this.run();
+			}
+		};
 	}
 
 	public void onTimer() {
+		Iterator<String> keys = sessions.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			UPnPDeviceSession session = sessions.get(key);
+			if (session.expired()) {
+				onDeviceSessionRemoved(session);
+				keys.remove();
+			}
+		}
 	}
 
-	public void subscribeEvent(UPnPDeviceSession session, String serviceType) {
+	public void onDeviceSessionRemoved(UPnPDeviceSession session) {
+		String udn = session.getUdn();
+		Iterator<String> sids = subscriptions.keySet().iterator();
+		while (sids.hasNext()) {
+			String sid = sids.next();
+			if (subscriptions.get(sid).getUdn().equals(udn)) {
+				sids.remove();
+			}
+		}
 	}
 
-	public void unsubscribeEvent(UPnPDeviceSession session) {
+	public void subscribeEvent(UPnPEventSubscription subscription) throws IOException {
+		Map<String, String> headers = new LinkedHashMap<>();
+		headers.put("CALLBACK", subscription.getCallbackUrlsString());
+		headers.put("NT", "upnp:event");
+		headers.put("TIMEOUT", "Second-" + subscription.getTimeoutSec());
+		HttpClient client = new HttpClient();
+		HttpResponse response = client.doRequest(subscription.getEventSubUrl(), "SUBSCRIBE", headers, null);
+		String sid = response.getHeader("SID");
+		subscription.setSid(sid);
+		subscriptions.put(sid, subscription);
+	}
+
+	public void unsubscribeEvent(UPnPEventSubscription subscription) throws IOException {
+		subscriptions.remove(subscription.getSid());
+		HttpClient client = new HttpClient();
+		Map<String, String> headers = new LinkedHashMap<>();
+		headers.put("SID", subscription.getSid());
+		client.doRequest(subscription.getEventSubUrl(), "UNSUBSCRIBE", headers, null);
 	}
 
 	public void msearch(String query, int mx) throws IOException {
@@ -91,6 +157,7 @@ public class UPnPControlPoint {
 	}
 
 	public static void main(String[] args) throws Exception {
+		
 		// run
 		// search
 		// list devices
@@ -99,6 +166,8 @@ public class UPnPControlPoint {
 		// watching device up/down
 
 		UPnPControlPoint cp = new UPnPControlPoint(9090);
+
+		new Thread(cp.getRunnable()).start();
 
 		cp.msearch("ssdp:all", 3);
 
@@ -139,6 +208,7 @@ public class UPnPControlPoint {
 				break;
 			}
 		}
+		cp.stop();
 	}
 }
 

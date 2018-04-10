@@ -32,6 +32,10 @@ class Logger {
 		writer.print(format(tag, "D", msg));
 	}
 
+	public void warning(String msg) {
+		writer.print(format(tag, "W", msg));
+	}
+
 	public void verbose(String msg) {
 		writer.print(format(tag, "V", msg));
 	}

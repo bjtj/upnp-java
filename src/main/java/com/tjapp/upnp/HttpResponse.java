@@ -19,6 +19,19 @@ class HttpResponse {
 		this.data = data;
 	}
 
+	public void clear() {
+		header.clear();
+		data = null;
+	}
+
+	public void setHttpHeader(HttpHeader header) {
+		this.header = header;
+	}
+
+	public HttpHeader getHttpHeader() {
+		return header;
+	}
+
 	public void setFirstLine(String firstLine) {
 		header.setFirstLine(firstLine);
 	}
@@ -36,12 +49,12 @@ class HttpResponse {
 		return header.getHeader("Content-Type");
 	}
 
-	public void setHeader(HttpHeader header) {
-		this.header = header;
+	public void setHeader(String name, String value) {
+		header.setHeader(name, value);
 	}
-
-	public HttpHeader getHeader() {
-		return header;
+	
+	public String getHeader(String name) {
+		return header.getHeader(name);
 	}
 
 	public void setData(byte[] data) {
@@ -60,7 +73,7 @@ class HttpResponse {
 	public static HttpResponse fromConnection(HttpURLConnection conn) throws IOException {
 		HttpResponse response = new HttpResponse();
 		response.setFirstLine(conn.getHeaderFields().get(null).get(0));
-		response.getHeader().setHeaderFields(conn.getHeaderFields());
+		response.getHttpHeader().setHeaderFields(conn.getHeaderFields());
 		byte[] data = IOUtil.dump(conn.getInputStream());
 		response.setData(data);
 		return response;

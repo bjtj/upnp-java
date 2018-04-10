@@ -37,6 +37,14 @@ class HttpClient {
 		}
 	}
 
+	public HttpResponse doGet(String url) throws IOException {
+		return doGet(new URL(url), null);
+	}
+
+	public HttpResponse doGet(String url, Map<String, String> headers) throws IOException {
+		return doGet(new URL(url), headers);
+	}
+
 	public HttpResponse doGet(URL url) throws IOException {
 		return doGet(url, null);
 	}
@@ -46,6 +54,14 @@ class HttpClient {
 		conn.setFollowRedirects(config.getRedirect());
 		setHeaderFields(conn, headers);
 		return HttpResponse.fromConnection(conn);
+	}
+
+	public HttpResponse doPost(String url, byte[] data) throws IOException {
+		return doPost(new URL(url), null, data);
+	}
+
+	public HttpResponse doPost(String url, Map<String, String> headers, byte[] data) throws IOException {
+		return doPost(new URL(url), headers, data);
 	}
 
 	public HttpResponse doPost(URL url, byte[] data) throws IOException {
@@ -59,6 +75,25 @@ class HttpClient {
 		setHeaderFields(conn, headers);
 		OutputStream out = conn.getOutputStream();
 		out.write(data);
+		return HttpResponse.fromConnection(conn);
+	}
+
+	public HttpResponse doRequest(String url, String method, Map<String, String> headers, byte[] data) throws IOException {
+		return doRequest(new URL(url), method, headers, data);
+	}
+
+	public HttpResponse doRequest(URL url, String method, Map<String, String> headers, byte[] data) throws IOException {
+		HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+		if (data != null) {
+			conn.setDoOutput(true);
+		}
+		conn.setFollowRedirects(config.getRedirect());
+		setHeaderFields(conn, headers);
+		conn.setRequestMethod(method);
+		if (data != null) {
+			OutputStream out = conn.getOutputStream();
+			out.write(data);
+		}
 		return HttpResponse.fromConnection(conn);
 	}
 

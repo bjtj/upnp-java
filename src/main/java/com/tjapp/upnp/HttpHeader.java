@@ -32,6 +32,11 @@ class HttpHeader {
 	private String firstLine;
 	private HeaderFields headerFields = new HeaderFields();
 
+	public void clear() {
+		firstLine = null;
+		headerFields.clear();
+	}
+
 	public String getFirstLine() {
 		return firstLine;
 	}

@@ -12,20 +12,19 @@ public class TestHttpServer {
 	
 	@Test
 	public void test_run() throws Exception {
-		new Thread(new Runnable() {
-				public void run() {
-					HttpServer server = new HttpServer(9900);
-					server.bind("/", new HttpServer.Handler() {
-							public HttpResponse handle(HttpRequest request) {
-								HttpResponse response = new HttpResponse();
-								response.setData("hello".getBytes());
-								return response;
-							}
-						});
-					logger.debug("[start server]");
-					server.run();
+
+
+		HttpServer server = new HttpServer(9900);
+		server.bind("/", new HttpServer.Handler() {
+				public HttpResponse handle(HttpRequest request) {
+					HttpResponse response = new HttpResponse();
+					response.setData("hello".getBytes());
+					return response;
 				}
-			}).start();
+			});
+		logger.debug("[start server]");
+		
+		new Thread(server.getRunnable()).start();
 
 		try {
 			Thread.sleep(1000);
@@ -33,13 +32,18 @@ public class TestHttpServer {
 			e.printStackTrace();
 		}
 
+		// java native
 		URL url = new URL("http://localhost:9900/");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
 		String line = reader.readLine();
 		assertEquals(line, "hello");
 
+		// wrapper - http client
 		HttpClient client = new HttpClient();
 		HttpResponse response = client.doGet(new URL("http://localhost:9900/"));
 		assertEquals(response.text(), "hello");
+
+		logger.debug("stop http server");
+		server.stop();
 	}
 }

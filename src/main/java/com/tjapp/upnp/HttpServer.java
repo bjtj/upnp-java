@@ -12,8 +12,11 @@ class HttpServer {
 
 	private Map<String, Handler> binder = new LinkedHashMap<>();
 	private int port;
-	private boolean done;
+	private boolean finishing;
+	private boolean running;
 	private static Logger logger = Logger.getLogger("HttpServer");
+	private ServerSocket server;
+	private Map<Socket, HttpClientThread> clientHandlers = new HashMap<>();
 	
 
 	/**
@@ -41,9 +44,13 @@ class HttpServer {
 	}
 	
 	public void run() {
+		if (running) {
+			throw new IllegalStateException("http server is already in running state");
+		}
 		try {
-			ServerSocket server = new ServerSocket(port);
-			while (done == false) {
+			running = true;
+			server = new ServerSocket(port);
+			while (Thread.interrupted() == false && finishing == false) {
 				Socket client = server.accept();
 				onAccept(client);
 			}
@@ -51,29 +58,75 @@ class HttpServer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		closeAllClients();
+		running = false;
+		logger.debug("[http server] done");
+	}
+
+	public Runnable getRunnable() {
+		return new Runnable() {
+			public void run() {
+				HttpServer.this.run();
+			}
+		};
+	}
+
+	public void closeAllClients() {
+		Iterator<Socket> keys = clientHandlers.keySet().iterator();
+		while (keys.hasNext()) {
+			Socket client = keys.next();
+			try {
+				client.close();
+			} catch (Exception e) {
+				logger.warning("client close - " + e.getMessage());
+			}
+		}
+		try {
+			while (clientHandlers.size() > 0) {
+				Thread.sleep(10);
+			}
+		}
+		catch (InterruptedException e) {
+			logger.warning("[ignore] wait all client handlers interrupted - " + e.getMessage());
+		}
+	}
+
+	public void stop() {
+		finishing = true;
+		try {
+			server.close();
+		}
+		catch (Exception e) {
+			logger.warning("[ignore] server socket close exception - " + e.getMessage());
+		}
+		try {
+			while (running) {
+				Thread.sleep(10);
+			}
+		}
+		catch (InterruptedException e) {
+			logger.warning("[ignore] wait interrupted - " + e.getMessage());
+		}
 	}
 
 	public void onAccept(Socket client) {
-		HttpClientThread t = new HttpClientThread(client);
+		HttpClientThread t = new HttpClientThread(this, client);
 		t.start();
+		clientHandlers.put(client, t);
 	}
 
-	/**
-	 * main
-	 *
-	 */
-	public static void main(String[] args) {
-		HttpServer server = new HttpServer(8080);
-		server.bind("/", new Handler() {
-				public HttpResponse handle(HttpRequest request) {
-					HttpResponse response = new HttpResponse();
-					response.setData("hello".getBytes());
-					return response;
-				}
-			});
-		server.run();
+	public void onDisconnected(Socket client) {
+		clientHandlers.remove(client);
 	}
 
+	public boolean isRunning() {
+		return running;
+	}
+
+	public boolean isFinishing() {
+		return finishing;
+	}
+	
 	
 	/**
 	 * read write state
@@ -88,10 +141,12 @@ class HttpServer {
 	 *
 	 */
 	private class HttpClientThread extends Thread {
-		
+
+		private HttpServer server;
 		private Socket client;
 		
-		public HttpClientThread (Socket client) {
+		public HttpClientThread (HttpServer server, Socket client) {
+			this.server = server;
 			this.client = client;
 		}
 		
@@ -105,9 +160,10 @@ class HttpServer {
 				int length = 0;
 				HttpRequest request = new HttpRequest();
 				HttpResponse response = null;
+				boolean keepConnect = true;
 				int write_len = 0;
 				int c = -1;
-				while (done == false) {
+				while (done == false && server.isFinishing() == false) {
 					if (readWriteState == ReadWriteState.READ_HEADER ||
 						readWriteState == ReadWriteState.READ_BODY) {
 						if ((c = in.read()) <= 0) {
@@ -121,10 +177,10 @@ class HttpServer {
 						sb.append((char)c);
 						if (sb.indexOf("\r\n\r\n") > 0) {
 							logger.debug(sb.toString());
-							request.header = parseHeader(sb.toString());
+							request.setHttpHeader(parseHeader(sb.toString()));
 							length = request.getContentLength();
 							if (length > 0) {
-								request.buffer = new byte[length];
+								request.setData(new byte[length]);
 								write_len = 0;
 								readWriteState = ReadWriteState.READ_BODY;
 							} else {
@@ -134,7 +190,7 @@ class HttpServer {
 						}
 						break;
 					case READ_BODY:
-						request.buffer[write_len++] = (byte)c;
+						request.getData()[write_len++] = (byte)c;
 						if (write_len >= length) {
 							response = handle(request);
 							readWriteState = ReadWriteState.WRITE_HEADER;
@@ -148,7 +204,16 @@ class HttpServer {
 						if (response.data != null) {
 							out.write(response.data);
 						}
-						done = true;
+						if (keepConnect) {
+							readWriteState = ReadWriteState.READ_HEADER;
+							sb = new StringBuffer();
+							length = 0;
+							request.clear();
+							response = null;
+							write_len = 0;
+						} else {
+							done = true;
+						}
 						break;
 					default:
 						break;
@@ -162,6 +227,7 @@ class HttpServer {
 					client.close();
 				} catch (Exception e) {
 				}
+				server.onDisconnected(client);
 			}
 		}
 
@@ -185,5 +251,21 @@ class HttpServer {
             HttpHeaderParser parser = new HttpHeaderParser();
 			return parser.parse(headerString);
 		}
+	}
+
+	/**
+	 * main
+	 *
+	 */
+	public static void main(String[] args) {
+		HttpServer server = new HttpServer(8080);
+		server.bind("/", new Handler() {
+				public HttpResponse handle(HttpRequest request) {
+					HttpResponse response = new HttpResponse();
+					response.setData("hello".getBytes());
+					return response;
+				}
+			});
+		server.run();
 	}
 }

@@ -30,7 +30,7 @@ public class TestSSDP {
 	
 	@Test
 	public void test_ssdp_msearch() throws Exception {
-		SSDPMsearchSender sender = new SSDPMsearchSender("ssdp:all", 5);
+		SSDPMsearchSender sender = new SSDPMsearchSender("ssdp:all", 3);
 		sender.send();
 		while (sender.timeout() == false) {
 			sender.pending(10);
