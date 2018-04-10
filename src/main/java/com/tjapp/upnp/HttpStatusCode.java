@@ -2,7 +2,7 @@ package com.tjapp.upnp;
 
 import java.util.*;
 
-class HttpError {
+public class HttpStatusCode {
 	private static Map<Integer, String> codes = new HashMap<>();
 
 	static {

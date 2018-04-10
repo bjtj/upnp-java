@@ -1,20 +1,19 @@
 package com.tjapp.upnp;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
-class SSDPServer {
+class SSDPReceiver {
 	
 	private int port;
 	private MulticastSocket sock;
 	private boolean done;
-	private static Logger logger = Logger.getLogger("SSDPServer");
+	private List<OnSSDPHandler> handlers = new ArrayList<>();
+	private static Logger logger = Logger.getLogger("SSDPReceiver");
+	
 
-	public SSDPServer (int port) {
+	public SSDPReceiver (int port) {
 		this.port = port;
 	}
 	
@@ -24,7 +23,7 @@ class SSDPServer {
 			sock.setReuseAddress(true);
 			sock.joinGroup(InetAddress.getByName(SSDP.MCAST_GROUP));
 			sock.setTimeToLive(64);
-			byte[] data = new byte[4096];
+			byte[] data = new byte[8 * 1024];
 			DatagramPacket pack = new DatagramPacket(data, data.length);
 			while (!done) {
 				pack.setLength(data.length);
@@ -36,13 +35,51 @@ class SSDPServer {
 			}
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 		}
+	}
+
+	public void stop() {
+		try {
+			sock.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Runnable getRunnable() {
+		return new Runnable() {
+			public void run() {
+				SSDPReceiver.this.run();
+			}
+		};
 	}
 
 	public void handleSSDPPacket(DatagramPacket packet) {
 		HttpHeaderParser parser = new HttpHeaderParser();
 		String text = new String(packet.getData(), 0, packet.getLength());
 		HttpHeader header = parser.parse(text);
-		logger.debug(header.toString());
+		SSDPHeader ssdp = new SSDPHeader(header);
+		for (OnSSDPHandler handler : handlers) {
+			handler.handle(ssdp);
+		}
+	}
+
+	public void addHandler(OnSSDPHandler handler) {
+		handlers.add(handler);
+	}
+
+	public void removeHandler(OnSSDPHandler handler) {
+		handlers.remove(handler);
+	}
+
+	public static void main(String[] args) {
+		SSDPReceiver receiver = new SSDPReceiver(SSDP.MCAST_PORT);
+		receiver.addHandler(new OnSSDPHandler() {
+				public void handle(SSDPHeader ssdp) {
+					logger.debug(ssdp.toString());
+				}
+			});
+		receiver.run();
 	}
 }

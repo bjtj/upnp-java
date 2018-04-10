@@ -17,7 +17,7 @@ public class TestHttpServer {
 		HttpServer server = new HttpServer(9900);
 		server.bind("/", new HttpServer.Handler() {
 				public HttpResponse handle(HttpRequest request) {
-					HttpResponse response = new HttpResponse();
+					HttpResponse response = new HttpResponse(200);
 					response.setData("hello".getBytes());
 					return response;
 				}

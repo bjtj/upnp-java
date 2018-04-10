@@ -13,7 +13,12 @@ public class UPnPControlPoint {
 	private HttpServer httpServer;
 	private boolean finishing;
 	private TimerThread timerThread;
+	private SSDPReceiver ssdpReceiver;
 
+	/**
+	 * 
+	 *
+	 */
 	private class TimerThread extends Thread {
 		private UPnPControlPoint cp;
 		private boolean paused;
@@ -51,13 +56,29 @@ public class UPnPControlPoint {
 	public void run() {
 		timerThread = new TimerThread(this, 10 * 1000);
 		timerThread.start();
+		ssdpReceiver = new SSDPReceiver(SSDP.MCAST_PORT);
+		ssdpReceiver.addHandler(new OnSSDPHandler() {
+				public void handle(SSDPHeader ssdp) {
+					if (ssdp.isNotify()) {
+						logger.debug(ssdp.toString());
+					}
+				}
+			});
+		new Thread(ssdpReceiver.getRunnable()).start();
 		httpServer = new HttpServer(port);
+		httpServer.bind("/event", new HttpServer.Handler() {
+				public HttpResponse handle(HttpRequest request) {
+					HttpResponse response = new HttpResponse(200);
+					return response;
+				}
+			});
 		httpServer.run();
 	}
 
 	public void stop() {
 		timerThread.finish();
 		timerThread = null;
+		ssdpReceiver.stop();
 		httpServer.stop();
 	}
 

@@ -9,9 +9,13 @@ class HttpResponse {
 	public byte[] data;
 
 	
-	public HttpResponse () {
+	public HttpResponse (int code) {
 		this.header = new HttpHeader();
-		this.header.setFirstLine("HTTP/1.1 200 OK");
+		this.header.setFirstLine("HTTP/1.1 " + code + " " + HttpStatusCode.getMessage(code));
+	}
+
+	public HttpResponse (HttpHeader header) {
+		this.header = header;
 	}
 		
 	public HttpResponse (HttpHeader header, byte[] data) {
@@ -71,11 +75,10 @@ class HttpResponse {
 	}
 
 	public static HttpResponse fromConnection(HttpURLConnection conn) throws IOException {
-		HttpResponse response = new HttpResponse();
-		response.setFirstLine(conn.getHeaderFields().get(null).get(0));
-		response.getHttpHeader().setHeaderFields(conn.getHeaderFields());
+		HttpHeader header = new HttpHeader();
+		header.setFirstLine(conn.getHeaderFields().get(null).get(0));
+		header.setHeaderFields(conn.getHeaderFields());
 		byte[] data = IOUtil.dump(conn.getInputStream());
-		response.setData(data);
-		return response;
+		return new HttpResponse(header, data);
 	}
 }

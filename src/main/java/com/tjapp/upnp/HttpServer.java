@@ -240,7 +240,7 @@ class HttpServer {
 			if (handler != null) {
 				return handler.handle(request);
 			}
-            return new HttpResponse();
+            return new HttpResponse(404);
 		}
 
 		/**
@@ -261,7 +261,7 @@ class HttpServer {
 		HttpServer server = new HttpServer(8080);
 		server.bind("/", new Handler() {
 				public HttpResponse handle(HttpRequest request) {
-					HttpResponse response = new HttpResponse();
+					HttpResponse response = new HttpResponse(200);
 					response.setData("hello".getBytes());
 					return response;
 				}
