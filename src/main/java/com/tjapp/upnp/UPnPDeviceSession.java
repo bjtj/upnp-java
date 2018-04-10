@@ -8,12 +8,12 @@ class UPnPDeviceSession {
 	private UPnPDeviceSessionStatus status = UPnPDeviceSessionStatus.PENDING;
 	private long registerTick;
 	private long timeout;
-	private String uuid;
 	private UPnPDevice device;
 	private String baseUrl;
 
-	public UPnPDeviceSession (String uuid) {
-		this.uuid = uuid;
+	public UPnPDeviceSession () {
+		registerTick = Clock.getTickMilli();
+		timeout = 30 * 1000;	// default 30 seconds
 	}
 
 	public String getUdn() {
@@ -51,14 +51,6 @@ class UPnPDeviceSession {
 
 	public void setStatus(UPnPDeviceSessionStatus status) {
 		this.status = status;
-	}
-
-	public String getUuid() {
-		return uuid;
-	}
-
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
 	}
 
 	public String getBaseUrl() {

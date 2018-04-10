@@ -2,6 +2,7 @@ package com.tjapp.upnp;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 import java.net.*;
 
 /**
@@ -10,13 +11,43 @@ import java.net.*;
  */
 class HttpServer {
 
-	private Map<String, Handler> binder = new LinkedHashMap<>();
+	private Binder binder = new Binder();
 	private int port;
 	private boolean finishing;
 	private boolean running;
 	private static Logger logger = Logger.getLogger("HttpServer");
 	private ServerSocket server;
 	private Map<Socket, HttpClientThread> clientHandlers = new HashMap<>();
+
+	/**
+	 * 
+	 *
+	 */
+	private class Binder extends HashMap<String, Handler> {
+		// https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+		private Map<String, Pattern> patterns = new HashMap<>();
+		@Override
+		public Handler put(String key, Handler handler) {
+			patterns.put(key, Pattern.compile(key));
+			return super.put(key, handler);
+		}
+		public Handler get(String query) {
+			Iterator<String> keys = patterns.keySet().iterator();
+			while (keys.hasNext()) {
+				String key = keys.next();
+				Matcher m = patterns.get(key).matcher(query);
+				if (m.matches()) {
+					return super.get(key);
+				}
+			}
+			return null;
+		}
+		@Override
+		public void clear() {
+			super.clear();
+			patterns.clear();
+		}
+	}
 	
 
 	/**

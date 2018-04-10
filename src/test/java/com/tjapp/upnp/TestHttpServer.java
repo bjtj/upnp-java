@@ -22,6 +22,14 @@ public class TestHttpServer {
 					return response;
 				}
 			});
+		server.bind("/static/.*", new HttpServer.Handler() {
+				public HttpResponse handle(HttpRequest request) {
+					HttpResponse response = new HttpResponse(200);
+					logger.debug("path: " + request.getPath());
+					response.setData("OK".getBytes());
+					return response;
+				}
+			});
 		logger.debug("[start server]");
 		
 		new Thread(server.getRunnable()).start();
@@ -42,6 +50,12 @@ public class TestHttpServer {
 		HttpClient client = new HttpClient();
 		HttpResponse response = client.doGet(new URL("http://localhost:9900/"));
 		assertEquals(response.text(), "hello");
+
+		response = client.doGet(new URL("http://localhost:9900/static/"));
+		assertEquals(response.text(), "OK");
+
+		response = client.doGet(new URL("http://localhost:9900/static/hello"));
+		assertEquals(response.text(), "OK");
 
 		logger.debug("stop http server");
 		server.stop();

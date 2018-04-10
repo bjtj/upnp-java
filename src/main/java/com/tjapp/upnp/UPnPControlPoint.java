@@ -153,7 +153,7 @@ public class UPnPControlPoint {
 			if (sessions.get(usn.getUuid()) != null) {
 				return;
 			}
-			UPnPDeviceSession session = new UPnPDeviceSession(usn.getUuid());
+			UPnPDeviceSession session = new UPnPDeviceSession();
 			session.setBaseUrl(header.getHeader("location"));
 			session.setDevice(builder.build(header.getHeader("location")));
 			session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
