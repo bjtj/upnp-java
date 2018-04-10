@@ -9,18 +9,41 @@ public class UPnPControlPoint {
 	private static Logger logger = Logger.getLogger("UPnPControlPoint");
 	private int port;
 	private Map<String, UPnPDeviceSession> sessions = new HashMap<>();
+	private Map<String, UPnPDeviceSession> subscriptions = new HashMap<>();
+	private HttpServer httpServer;
+	private boolean finishing;
+
+	private class TimerThread extends Thread {
+		private UPnPControlPoint cp;
+		public TimerThread (UPnPControlPoint cp) {
+			this.cp = cp;
+		}
+		public void run() {
+			try {
+				while (Thread.interrupted() == false && finishing == false) {
+					Thread.sleep(10);
+				}
+			} catch (InterruptedException e) {
+				// 
+			}
+		}
+	}
 	
 	public UPnPControlPoint (int port) {
 		this.port = port;
+		httpServer = new HttpServer(port);
 	}
 	
 	public void run() {
 	}
 
-	public void subscribeEvent() {
+	public void onTimer() {
 	}
 
-	public void unsubscribeEvent() {
+	public void subscribeEvent(UPnPDeviceSession session, String serviceType) {
+	}
+
+	public void unsubscribeEvent(UPnPDeviceSession session) {
 	}
 
 	public void msearch(String query, int mx) throws IOException {
