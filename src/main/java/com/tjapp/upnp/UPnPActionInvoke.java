@@ -17,7 +17,7 @@ class UPnPActionInvoke {
 		String soap = request.toSoap();
 		logger.debug("request: " + soap);
 		Map<String, String> header = new LinkedHashMap<>();
-		header.put("SOAPACTION", "\"" + request.getService().getServiceType() + "#" + request.getAction().getName() + "\"");
+		header.put("SOAPACTION", "\"" + request.getServiceType() + "#" + request.getActionName() + "\"");
 		header.put("Content-Type", "text/xml");
 		HttpResponse response = client.doPost(url, header, soap.getBytes());
 		logger.debug("response: " + response.text());

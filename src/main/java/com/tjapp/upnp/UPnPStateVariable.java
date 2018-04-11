@@ -14,6 +14,9 @@ class UPnPStateVariable {
 	private String dataType;
 	private String defaultValue;
 	private List<String> allowedValueList;
+	private String allowedValueRangeMax;
+	private String allowedValueRangeMin;
+	private String allowedValueRangeStep;
 	private static Logger logger = Logger.getLogger("UPnPStateVariable");
 
 	public boolean getSendEvents() {
@@ -64,6 +67,30 @@ class UPnPStateVariable {
 		this.allowedValueList = allowedValueList;
 	}
 
+	public void setAllowedValueRangeMax(String max) {
+		allowedValueRangeMax = max;
+	}
+
+	public String getAllowedValueRangeMax() {
+		return allowedValueRangeMax;
+	}
+	
+	public void setAllowedValueRangeMin(String min) {
+		allowedValueRangeMin = min;
+	}
+
+	public String getAllowedValueRangeMin() {
+		return allowedValueRangeMin;
+	}
+
+	public void setAllowedValueRangeStep(String step) {
+		allowedValueRangeStep = step;
+	}
+
+	public String getAllowedValueRangeStep() {
+		return allowedValueRangeStep;
+	}
+
 	public static UPnPStateVariable fromNode(Node stateVariableNode) {
 		UPnPStateVariable stateVariable = new UPnPStateVariable();
 		NodeList list = stateVariableNode.getChildNodes();
@@ -88,8 +115,65 @@ class UPnPStateVariable {
 					}
 				}
 				stateVariable.setAllowedValueList(allowedValueList);
+			} else if (name.equals("allowedValueRange")) {
+				NodeList allowedValueRangeNodeList = node.getChildNodes();
+				for (int j = 0; j < allowedValueRangeNodeList.getLength(); j++) {
+					Node rangeNode = allowedValueRangeNodeList.item(j);
+					if (rangeNode.getNodeName().equals("minimum")) {
+						stateVariable.setAllowedValueRangeMin(
+							rangeNode.getFirstChild().getNodeValue());
+					} else if (rangeNode.getNodeName().equals("maximum")) {
+						stateVariable.setAllowedValueRangeMax(
+							rangeNode.getFirstChild().getNodeValue());
+					} else if (rangeNode.getNodeName().equals("step")) {
+						stateVariable.setAllowedValueRangeStep(
+							rangeNode.getFirstChild().getNodeValue());
+					}
+				}
 			}
 		}
 		return stateVariable;
+	}
+
+	public String getDefaultValueXml() {
+		if (StringUtil.isEmpty(defaultValue)) {
+			return "";
+		}
+		return XmlTag.wrap("defaultValue", defaultValue);
+	}
+
+	public String getAllowedValueListXml() {
+		if (allowedValueList == null || allowedValueList.size() == 0) {
+			return "";
+		}
+		StringBuffer sb = new StringBuffer();
+		for (String allowedValue : allowedValueList) {
+			sb.append(XmlTag.wrap("allowedValue", allowedValue));
+		}
+		return XmlTag.wrap("allowedValueList", sb.toString());
+	}
+
+	public String getAllowedValueRangeXml() {
+		if (StringUtil.isEmpty(allowedValueRangeMax) ||
+			StringUtil.isEmpty(allowedValueRangeMin)) {
+			return "";
+		}
+
+		return XmlTag.wrap("allowedValueRange",
+						   XmlTag.wrap("minimum", allowedValueRangeMin) +
+						   XmlTag.wrap("maximum", allowedValueRangeMax) +
+						   (StringUtil.isEmpty(allowedValueRangeStep) ? "" :
+							XmlTag.wrap("step", allowedValueRangeStep)));
+	}
+
+	public String toXml() {
+		XmlTag stateVariable = new XmlTag("stateVariable");
+		stateVariable.setAttribute("sendEvents", StringUtil.yesNo(sendEvents));
+		stateVariable.setAttribute("multicast", StringUtil.yesNo(multicast));
+		return stateVariable.wrap(XmlTag.wrap("name", name) +
+								  XmlTag.wrap("dataType", dataType) +
+								  getDefaultValueXml() +
+								  getAllowedValueListXml() +
+								  getAllowedValueRangeXml());
 	}
 }

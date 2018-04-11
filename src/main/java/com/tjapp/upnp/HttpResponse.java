@@ -61,6 +61,10 @@ class HttpResponse {
 		return header.getHeader(name);
 	}
 
+	public void setData(String text) {
+		setData(text.getBytes());
+	}
+
 	public void setData(byte[] data) {
 		this.data = data;
 		header.setHeader("Content-Length", Integer.toString(data.length));

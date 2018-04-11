@@ -12,6 +12,23 @@ class UPnPEventSubscription {
 	private long lastSeq;
 	private List<String> callbackUrls = new ArrayList<>();
 	private long timeoutSec;
+	private long tick;
+
+	public UPnPEventSubscription () {
+		tick = Clock.getTickMilli();
+	}
+
+	public void updateTick() {
+		tick = Clock.getTickMilli();
+	}
+
+	public long lifetime() {
+		return (Clock.getTickMilli() - tick);
+	}
+
+	public boolean expired() {
+		return (lifetime() >= (timeoutSec * 1000));
+	}
 
 	public String getEventSubUrl() {
 		return eventSubUrl;

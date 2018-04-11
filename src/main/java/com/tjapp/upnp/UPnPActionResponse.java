@@ -119,7 +119,7 @@ class UPnPActionResponse {
 		return response;
 	}
 
-	public String toSoap() {
+	public String toXml() {
 		return UPnPSoap.toXml(this);
 	}
 }

@@ -10,18 +10,18 @@ public class UPnPSoap {
 	
 	public static String toXml(UPnPActionRequest request) {
 
-		String serviceType = request.getService().getServiceType();
-		String actionName = request.getAction().getName();
+		String serviceType = request.getServiceType();
+		String actionName = request.getActionName();
 		Map<String, String> parameters = request.getParameters();
 
 		XmlTag env = new XmlTag("s", "Envelope");
-		env.addAttribute("s:encodingStyle", "http://schemas.xmlsoap.org/soap/encoding/");
-		env.addAttribute("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
+		env.setAttribute("s:encodingStyle", "http://schemas.xmlsoap.org/soap/encoding/");
+		env.setAttribute("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
 
 		XmlTag body = new XmlTag("s", "Body");
 
 		XmlTag action = new XmlTag("u", actionName);
-		action.addAttribute("xmlns:u", serviceType);
+		action.setAttribute("xmlns:u", serviceType);
 
 		StringBuffer sb = new StringBuffer();
 		Iterator<String> keys = parameters.keySet().iterator();
@@ -42,13 +42,13 @@ public class UPnPSoap {
 		Map<String, String> parameters = response.getParameters();
 	
 		XmlTag env = new XmlTag("s", "Envelope");
-		env.addAttribute("s:encodingStyle", "http://schemas.xmlsoap.org/soap/encoding/");
-		env.addAttribute("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
+		env.setAttribute("s:encodingStyle", "http://schemas.xmlsoap.org/soap/encoding/");
+		env.setAttribute("xmlns:s", "http://schemas.xmlsoap.org/soap/envelope/");
 
 		XmlTag body = new XmlTag("s", "Body");
 
 		XmlTag action = new XmlTag("u", actionName + "Response");
-		action.addAttribute("xmlns:u", serviceType);
+		action.setAttribute("xmlns:u", serviceType);
 
 		StringBuffer sb = new StringBuffer();
 		Iterator<String> keys = parameters.keySet().iterator();

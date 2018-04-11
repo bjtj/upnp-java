@@ -55,7 +55,7 @@ class HttpServer {
 	 *
 	 */
 	public interface Handler {
-		public HttpResponse handle(HttpRequest request);
+		public HttpResponse handle(HttpRequest request) throws Exception;
 	}
 
 	/**
@@ -268,8 +268,12 @@ class HttpServer {
 		 */
 		public HttpResponse handle(HttpRequest request) {
 			Handler handler = binder.get(request.getPath());
-			if (handler != null) {
-				return handler.handle(request);
+			try {
+				if (handler != null) {
+					return handler.handle(request);
+				}
+			} catch (Exception e) {
+				return new HttpResponse(500);
 			}
             return new HttpResponse(404);
 		}

@@ -31,6 +31,10 @@ public class UPnPService {
 		return properties.get("eventSubURL").getValue();
 	}
 
+	public void setProperty(String name, String value) {
+		properties.put(name, new UPnPProperty(name, value));
+	}
+
 	public void setProperty(UPnPProperty property) {
 		properties.put(property.getName(), property);
 	}
@@ -58,5 +62,16 @@ public class UPnPService {
 			}
 		}
 		return service;
+	}
+
+	public String toXml() {
+		XmlTag service = new XmlTag("service");
+		StringBuffer sb = new StringBuffer();
+		Iterator<String> keys = properties.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			sb.append(properties.get(key).toXml());
+		}
+		return service.wrap(sb.toString());
 	}
 }

@@ -7,7 +7,8 @@ public class XmlTag {
 
 	private String ns;
 	private String name;
-	private List<Pair<String, String>> attrs = new ArrayList<>();
+	// private List<Pair<String, String>> attrs = new ArrayList<>();
+	private Map<String, String> attributes = new LinkedHashMap<>();
 
 	public XmlTag(String name) {
 		this.name = name;
@@ -18,15 +19,26 @@ public class XmlTag {
 		this.name = name;
 	}
 
-	public XmlTag(String name, List<Pair<String, String>> attrs) {
+	// public XmlTag(String name, List<Pair<String, String>> attrs) {
+	// 	this.name = name;
+	// 	this.attrs = attrs;
+	// }
+
+	public XmlTag(String name, Map<String, String> attributes) {
 		this.name = name;
-		this.attrs = attrs;
+		this.attributes = attributes;
 	}
 
-	public XmlTag(String ns, String name, List<Pair<String, String>> attrs) {
+	// public XmlTag(String ns, String name, List<Pair<String, String>> attrs) {
+	// 	this.ns = ns;
+	// 	this.name = name;
+	// 	this.attrs = attrs;
+	// }
+
+	public XmlTag(String ns, String name, Map<String, String> attributes) {
 		this.ns = ns;
 		this.name = name;
-		this.attrs = attrs;
+		this.attributes = attributes;
 	}
 
 	public static void main(String[] args) {
@@ -34,7 +46,7 @@ public class XmlTag {
 	}
 	
 	public String start() {
-		return "<" + append(nsName(), strAttributes(), " ") + ">";
+		return "<" + append(nsName(), getAttributeString(), " ") + ">";
 	}
 
 	public String end() {
@@ -49,13 +61,26 @@ public class XmlTag {
 		return (isEmpty(ns) ? name : (ns + ":" + name));
 	}
 
-	public String strAttributes() {
+	// public String strAttributes() {
+	// 	StringBuffer sb = new StringBuffer();
+	// 	for (Pair<String, String> attr : attrs) {
+	// 		if (sb.length() > 0) {
+	// 			sb.append(" ");
+	// 		}
+	// 		sb.append(attr.getFirst() + "=\"" + attr.getSecond() + "\"");
+	// 	}
+	// 	return sb.toString();
+	// }
+
+	public String getAttributeString() {
 		StringBuffer sb = new StringBuffer();
-		for (Pair<String, String> attr : attrs) {
+		Iterator<String> keys = attributes.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
 			if (sb.length() > 0) {
 				sb.append(" ");
 			}
-			sb.append(attr.getFirst() + "=\"" + attr.getSecond() + "\"");
+			sb.append(key + "=" + StringUtil.quote(attributes.get(key)));
 		}
 		return sb.toString();
 	}
@@ -86,20 +111,28 @@ public class XmlTag {
 		this.name = name;
 	}
 
-	public void addAttribute(String name, String value) {
-		addAttribute(new Pair<String, String>(name, value));
+	// public void addAttribute(String name, String value) {
+	// 	addAttribute(new Pair<String, String>(name, value));
+	// }
+
+	// public void addAttribute(Pair<String, String> pair) {
+	// 	attrs.add(pair);
+	// }
+
+	// public List<Pair<String, String>> getAttributes() {
+	// 	return attrs;
+	// }
+
+	public Map<String, String> getAttributes() {
+		return attributes;
 	}
 
-	public void addAttribute(Pair<String, String> pair) {
-		attrs.add(pair);
-	}
+	// public void setAttributes(List<Pair<String, String>> attrs) {
+	// 	this.attrs = attrs;
+	// }
 
-	public List<Pair<String, String>> getAttributes() {
-		return attrs;
-	}
-
-	public void setAttributes(List<Pair<String, String>> attrs) {
-		this.attrs = attrs;
+	public void setAttribute(String name, String value) {
+		attributes.put(name, value);
 	}
 
 	private boolean isEmpty(String str) {
@@ -108,5 +141,13 @@ public class XmlTag {
 
 	private String escape(String str) {
 		return str.replaceAll("\"", "\\\"");
+	}
+
+	public static String docType(String xml) {
+		return "<?xml version=\"1.0\"?>\n" + xml;
+	}
+
+	public static String wrap(String name, String value) {
+		return new XmlTag(name).wrap(value);
 	}
 }

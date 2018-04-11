@@ -106,7 +106,41 @@ class UPnPScpd {
 		return scpd;
 	}
 
+	public String getActionListXml() {
+		StringBuffer sb = new StringBuffer();
+		Iterator<String> keys = actions.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			sb.append(actions.get(key).toXml());
+		}
+		return sb.toString();
+	}
+
+	public String getServiceStateTableXml() {
+		StringBuffer sb = new StringBuffer();
+		Iterator<String> keys = stateVariables.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			sb.append(stateVariables.get(key).toXml());
+		}
+		return sb.toString();
+	}
+
 	public String toXml() {
-		return "";
+
+		XmlTag scpd = new XmlTag("scpd");
+		XmlTag specVersion = new XmlTag("specVersion");
+		XmlTag major = new XmlTag("major");
+		XmlTag minor = new XmlTag("minor");
+		XmlTag actionList = new XmlTag("actionList");
+		XmlTag serviceStateTable = new XmlTag("serviceStateTable");
+		
+		
+		return XmlTag.docType(
+			scpd.wrap(
+				specVersion.wrap(XmlTag.wrap("major", "" + majorVersion) +
+								 XmlTag.wrap("minor", "" + minorVersion)) +
+				actionList.wrap(getActionListXml()) +
+				serviceStateTable.wrap(getServiceStateTableXml())));
 	}
 }

@@ -202,14 +202,14 @@ public class UPnPControlPoint {
 				logger.debug("device: " + session.getDevice().getFriendlyName() + " / " + session.getDeviceType());
 				if (session.getDeviceType().equals("urn:schemas-upnp-org:device:BinaryLight:1")) {
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:SwitchPower:1");
-					UPnPActionRequest request = new UPnPActionRequest(service, "SetTarget");
+					UPnPActionRequest request = new UPnPActionRequest(service.getControlUrl(), service.getServiceType(), "SetTarget");
 					request.setParameter("NewTargetValue", "1");
 					UPnPActionResponse resp = session.invokeAction(request);
 				} else if (session.getDeviceType().equals("urn:schemas-upnp-org:device:MediaServer:1")) {
 					List<UPnPService> services = session.getDevice().getServiceList();
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:ContentDirectory:1");
 
-					UPnPActionRequest request = new UPnPActionRequest(service, "Browse");
+					UPnPActionRequest request = new UPnPActionRequest(service.getControlUrl(), service.getServiceType(), "Browse");
 					request.setParameter("ObjectID", "0");
 					request.setParameter("BrowseFlag", "BrowseDirectChildren");
 					request.setParameter("Filter", "*");

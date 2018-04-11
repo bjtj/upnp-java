@@ -68,4 +68,8 @@ class HttpRequest {
 	public byte[] getData() {
 		return data;
 	}
+
+	public String text() {
+		return new String(data);
+	}
 }

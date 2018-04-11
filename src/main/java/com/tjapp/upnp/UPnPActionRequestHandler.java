@@ -1,6 +1,5 @@
 package com.tjapp.upnp;
 
-class UPnPActionRequestHandler {
-	public void handle(UPnPActionRequest request) {
-	}
+public interface UPnPActionRequestHandler {
+	public UPnPActionResponse handle(UPnPActionRequest request);
 }

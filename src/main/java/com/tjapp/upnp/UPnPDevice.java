@@ -125,4 +125,50 @@ class UPnPDevice {
 		}
 		return device;
 	}
+
+	public String getPropertiesXml() {
+		StringBuffer sb = new StringBuffer();
+		Iterator<String> keys = properties.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			sb.append(properties.get(key).toXml());
+		}
+		return sb.toString();
+	}
+
+	public String getServiceListXml() {
+		XmlTag serviceList = new XmlTag("serviceList");
+		StringBuffer sb = new StringBuffer();
+		for (UPnPService service : services) {
+			sb.append(service.toXml());
+		}
+		return serviceList.wrap(sb.toString());
+	}
+
+	public String getDeviceListXml() {
+		if (childDevices.size() == 0) {
+			return "";
+		}
+		StringBuffer sb = new StringBuffer();
+		for (UPnPDevice childDevice : childDevices) {
+			sb.append(childDevice.toXml());
+		}
+		return XmlTag.wrap("deviceList", sb.toString());
+	}
+
+	public String toXml() {
+		XmlTag root = new XmlTag("root");
+		XmlTag specVersion = new XmlTag("specVersion");
+		XmlTag major = new XmlTag("major");
+		XmlTag minor = new XmlTag("minor");
+		XmlTag device = new XmlTag("device");
+
+		return XmlTag.docType(
+			root.wrap(
+				specVersion.wrap(major.wrap("1") +
+								 minor.wrap("0"))
+				+ device.wrap(getPropertiesXml() +
+							  getServiceListXml() +
+							  getDeviceListXml())));
+	}
 }

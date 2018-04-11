@@ -47,4 +47,22 @@ class UPnPAction {
 		}
 		return action;
 	}
+
+	public String getArgumentListXml() {
+		StringBuffer sb = new StringBuffer();
+		Iterator<String> keys = arguments.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			sb.append(arguments.get(key).toXml());
+		}
+		return sb.toString();
+	}
+
+	public String toXml() {
+		XmlTag action = new XmlTag("action");
+		XmlTag argumentList = new XmlTag("argumentList");
+
+		return action.wrap(XmlTag.wrap("name", name) +
+						   argumentList.wrap(getArgumentListXml()));
+	}
 }

@@ -40,9 +40,12 @@ class UPnPDeviceSession {
 		return device.getService(serviceType);
 	}
 
+	public long lifetime() {
+		return (Clock.getTickMilli() - registerTick);
+	}
+
 	public boolean expired() {
-		long dur = Clock.getTickMilli() - registerTick;
-		return dur >= timeout;
+		return (lifetime() >= timeout);
 	}
 
 	public UPnPDeviceSessionStatus getStatus() {

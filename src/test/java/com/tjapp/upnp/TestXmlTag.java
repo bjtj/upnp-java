@@ -11,9 +11,9 @@ public class TestXmlTag {
 		assertEquals(tag.wrap("hello"), "<body>hello</body>");
 		tag.setNamespace("u");
 		assertEquals(tag.wrap("hello"), "<u:body>hello</u:body>");
-		tag.addAttribute("x", "abc");
+		tag.setAttribute("x", "abc");
 		assertEquals(tag.wrap("hello"), "<u:body x=\"abc\">hello</u:body>");
-		tag.addAttribute(new Pair<String,String>("y", "dce"));
+		tag.setAttribute("y", "dce");
 		assertEquals(tag.wrap("hello"), "<u:body x=\"abc\" y=\"dce\">hello</u:body>");
 
 		XmlTag rootTag = new XmlTag("root");

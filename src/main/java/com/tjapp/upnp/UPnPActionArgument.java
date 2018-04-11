@@ -50,4 +50,11 @@ class UPnPActionArgument {
 		}
 		return argument;
 	}
+
+	public String toXml() {
+		XmlTag argument = new XmlTag("argument");
+		return argument.wrap(XmlTag.wrap("name", name) +
+							 XmlTag.wrap("direction", direction.toString()) +
+							 XmlTag.wrap("relatedStateVariable", relatedStateVariable));
+	}
 }
