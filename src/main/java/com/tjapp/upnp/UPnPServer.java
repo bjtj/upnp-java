@@ -1,5 +1,6 @@
 package com.tjapp.upnp;
 
+import java.io.*;
 import java.util.*;
 
 
@@ -121,6 +122,14 @@ class UPnPServer {
 		httpServer.run();
 	}
 
+	public Runnable getRunnable() {
+		return new Runnable() {
+			public void run() {
+				UPnPServer.this.run();
+			}
+		};
+	}
+
 	public UPnPActionResponse onActionRequest(UPnPActionRequest request) {
 		for (UPnPActionRequestHandler handler : actionHandlers) {
 			return handler.handle(request);
@@ -147,21 +156,81 @@ class UPnPServer {
 		httpServer.stop();
 	}
 
-	public void sendNotification(Notification notification) {
-		switch (notification) {
-		case ALIVE:
-			break;
-		case UPDATE:
-			break;
-		case BYEBYE:
-			break;
-		default:
-			break;
-		}
+	public String getLocationUrl(UPnPDevice device) {
+		// String addr = NetworkManager.getIpv4().getHostAddress();
+		String addr = httpServer.getInetAddress().getHostAddress();
+		logger.debug("location: " + addr);
+		return "http://" + addr + ":" + httpServer.getPort()
+			+ "/" + device.getUdn() + "/device.xml" ;
 	}
 
-	public List<UPnPDevice> list() {
-		return null;
+	public void notifyAlive(UPnPDevice device) throws IOException {
+		MulticastSender sender = new MulticastSender();
+
+		HttpHeader header = new HttpHeader();
+		header.setFirstLine("NOTIFY * HTTP/1.1");
+		header.setHeader("HOST", SSDP.MCAST_GROUP + ":" + SSDP.MCAST_PORT);
+		header.setHeader("Cache-Control", "max-age=1800");
+		header.setHeader("Location", getLocationUrl(device));
+		header.setHeader("Server", Config.SERVER_NAME);
+		header.setHeader("NTS", "ssdp:alive");
+		
+		// uuid only
+		header.setHeader("NT", device.getUdn());
+		header.setHeader("USN", device.getUdn());
+		sender.send(header.toString());
+		// uuid :: upnp:rootdevice
+		header.setHeader("NT", "upnp:rootdevice");
+		header.setHeader("USN", device.getUdn() + "::upnp:rootdevice");
+		sender.send(header.toString());
+		// each device
+		header.setHeader("NT", device.getDeviceType());
+		header.setHeader("USN", device.getUdn() + "::" + device.getDeviceType());
+		sender.send(header.toString());
+		// each services
+		List<UPnPService> serviceList = device.getServiceList();
+		for (UPnPService service : serviceList) {
+			header.setHeader("NT", service.getServiceType());
+			header.setHeader("USN", device.getUdn() + "::" + service.getServiceType());
+			sender.send(header.toString());
+		}
+
+		sender.close();
+	}
+
+	public void notifyUpdate(UPnPDevice device) {
+		// 
+	}
+
+	public void notifyByebye(UPnPDevice device) throws IOException {
+		MulticastSender sender = new MulticastSender();
+
+		HttpHeader header = new HttpHeader();
+		header.setFirstLine("NOTIFY * HTTP/1.1");
+		header.setHeader("HOST", SSDP.MCAST_GROUP + ":" + SSDP.MCAST_PORT);
+		header.setHeader("NTS", "ssdp:byebye");
+		
+		// uuid only
+		header.setHeader("NT", device.getUdn());
+		header.setHeader("USN", device.getUdn());
+		sender.send(header.toString());
+		// uuid :: upnp:rootdevice
+		header.setHeader("NT", "upnp:rootdevice");
+		header.setHeader("USN", device.getUdn() + "::upnp:rootdevice");
+		sender.send(header.toString());
+		// each device
+		header.setHeader("NT", device.getDeviceType());
+		header.setHeader("USN", device.getUdn() + "::" + device.getDeviceType());
+		sender.send(header.toString());
+		// each services
+		List<UPnPService> serviceList = device.getServiceList();
+		for (UPnPService service : serviceList) {
+			header.setHeader("NT", service.getServiceType());
+			header.setHeader("USN", device.getUdn() + "::" + service.getServiceType());
+			sender.send(header.toString());
+		}
+
+		sender.close();
 	}
 
 	public void addActionRequestHandler(UPnPActionRequestHandler handler) {
@@ -170,5 +239,13 @@ class UPnPServer {
 
 	public void removeActionRequestHandler(UPnPActionRequestHandler handler) {
 		actionHandlers.remove(handler);
+	}
+
+	public static void main(String[] args) {
+		UPnPServer server = new UPnPServer(8888);
+		new Thread(server.getRunnable()).start();
+		// add device
+		// notify alive
+		server.stop();
 	}
 }

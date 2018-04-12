@@ -5,6 +5,8 @@ import java.net.*;
 
 class NetworkManager {
 
+	private static Logger logger = Logger.getLogger("NetworkManager");
+
 	public static NetworkInterface iface(String ifaceName) throws Exception {
 		return NetworkInterface.getByName(ifaceName);
 	}
@@ -31,5 +33,39 @@ class NetworkManager {
 
 	public static boolean isIpv6(InetAddress addr) {
 		return (addr instanceof Inet6Address);
+	}
+
+	public static InetAddress getIpv4() throws Exception {
+		Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+		while (ifaces.hasMoreElements()) {
+			NetworkInterface iface = ifaces.nextElement();
+			Enumeration<InetAddress> addrs = iface.getInetAddresses();
+			while (addrs.hasMoreElements()) {
+				InetAddress addr = addrs.nextElement();
+				boolean ipv4 = addr instanceof Inet4Address;
+				if (ipv4 && addr.isLoopbackAddress() == false) {
+					return addr;
+				}
+			}
+		}
+		return null;
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		logger.debug("local host: " + InetAddress.getLocalHost());
+		logger.debug("loopback: " + InetAddress.getLoopbackAddress());
+		
+		Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+		while (ifaces.hasMoreElements()) {
+			NetworkInterface iface = ifaces.nextElement();
+			logger.debug(iface.toString());
+			Enumeration<InetAddress> addrs = iface.getInetAddresses();
+			while (addrs.hasMoreElements()) {
+				InetAddress addr = addrs.nextElement();
+				boolean ipv4 = addr instanceof Inet4Address;
+				logger.debug(" * [ipv4:" + ipv4 + "] " + addr.getHostAddress() + " / loopback: " + addr.isLoopbackAddress());
+			}
+		}
 	}
 }

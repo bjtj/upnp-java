@@ -1,6 +1,15 @@
 package com.tjapp.upnp;
 
+import java.util.regex.*;
+
 class StringUtil {
+
+	// https://stackoverflow.com/a/15567045/5676460
+	private final static Pattern LTRIM = Pattern.compile("^\\s+");
+
+	public static String ltrim(String text) {
+		return LTRIM.matcher(text).replaceAll("");
+	}
 
 	public static String yesNo(boolean b) {
 		return b ? "yes" : "no";

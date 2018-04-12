@@ -44,7 +44,7 @@ class SSDPMsearchSender {
 		header.setHeader("MAN", "\"ssdp:discover\"");
 		header.setHeader("MX", Long.toString(mx));
         header.setHeader("ST", type);
-		header.setHeader("USER-AGENT", "java/* UPnP/1.1 app/1.0");
+		header.setHeader("USER-AGENT", Config.SERVER_NAME);
 		byte[] payload = header.toString().getBytes();
 		channel.send(ByteBuffer.wrap(payload), targetAddr);
 		tick = Clock.getTickMilli();

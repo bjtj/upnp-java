@@ -157,6 +157,14 @@ class HttpServer {
 	public boolean isFinishing() {
 		return finishing;
 	}
+
+	public InetAddress getInetAddress() {
+		return server.getInetAddress();
+	}
+
+	public int getPort() {
+		return port;
+	}
 	
 	
 	/**
