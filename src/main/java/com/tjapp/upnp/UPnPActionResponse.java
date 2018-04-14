@@ -5,7 +5,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-class UPnPActionResponse {
+public class UPnPActionResponse {
 
 	private static Logger logger = Logger.getLogger("UPnPActionResponse");
 	private String serviceType;

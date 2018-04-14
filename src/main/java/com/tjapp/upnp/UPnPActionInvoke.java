@@ -12,6 +12,7 @@ class UPnPActionInvoke {
 	}
 
 	public static UPnPActionResponse invoke(URL baseUrl, UPnPActionRequest request) throws Exception {
+		logger.debug("invoke - " + baseUrl + " and " + request.getControlUrl());
 		URL url = new URL(baseUrl, request.getControlUrl());
 		HttpClient client = new HttpClient();
 		String soap = request.toSoap();

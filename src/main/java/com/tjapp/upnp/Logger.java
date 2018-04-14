@@ -3,7 +3,7 @@ package com.tjapp.upnp;
 import java.util.*;
 import java.text.*;
 
-class Logger {
+public class Logger {
 
 	public final static LogWriter CONSOLE_WRITER = new ConsoleWriter();
 	public final static LogWriter NULL_WRITER = new NullWriter();

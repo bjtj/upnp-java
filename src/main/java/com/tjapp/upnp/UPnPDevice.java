@@ -8,12 +8,12 @@ import org.xml.sax.helpers.*;
 class UPnPDevice {
 
 	private static Logger logger = Logger.getLogger("UPnPDevice");
-	// static {
-	// 	logger.setWriter(Logger.NULL_WRITER);
-	// }
+	static {
+		logger.setWriter(Logger.NULL_WRITER);
+	}
 	private Map<String, UPnPProperty> properties = new LinkedHashMap<>();
 	private List<UPnPDevice> childDevices = new ArrayList<>();
-	private List<UPnPService> services = new ArrayList<>();
+	private List<UPnPService> serviceList = new ArrayList<>();
 
 	public UPnPDevice () {
 	}
@@ -40,7 +40,7 @@ class UPnPDevice {
 
 	public void setScpdUrl(String fmt) {
 		fmt = fmt.replaceAll("\\$udn", getUdn());
-		for (UPnPService service : services) {
+		for (UPnPService service : serviceList) {
 			service.setScpdUrl(fmt.replaceAll("\\$serviceType", service.getServiceType()));
 		}
 		for (UPnPDevice childDevice : childDevices) {
@@ -50,7 +50,7 @@ class UPnPDevice {
 
 	public void setControlUrl(String fmt) {
 		fmt = fmt.replaceAll("\\$udn", getUdn());
-		for (UPnPService service : services) {
+		for (UPnPService service : serviceList) {
 			service.setControlUrl(fmt.replaceAll("\\$serviceType", service.getServiceType()));
 		}
 		for (UPnPDevice childDevice : childDevices) {
@@ -60,7 +60,7 @@ class UPnPDevice {
 
 	public void setEventSubUrl(String fmt) {
 		fmt = fmt.replaceAll("\\$udn", getUdn());
-		for (UPnPService service : services) {
+		for (UPnPService service : serviceList) {
 			service.setEventSubUrl(fmt.replaceAll("\\$serviceType", service.getServiceType()));
 		}
 		for (UPnPDevice childDevice : childDevices) {
@@ -89,15 +89,15 @@ class UPnPDevice {
 	}
 
 	public void addService(UPnPService service) {
-		services.add(service);
+		serviceList.add(service);
 	}
 
 	public void removeService(UPnPService service) {
-		services.remove(service);
+		serviceList.remove(service);
 	}
 
 	public UPnPService getService(String serviceType) {
-		for (UPnPService service : services) {
+		for (UPnPService service : serviceList) {
 			logger.debug("service type: " + service.getServiceType());
 			if (service.getServiceType().equals(serviceType)) {
 				return service;
@@ -107,7 +107,7 @@ class UPnPDevice {
 	}
 
 	public List<UPnPService> getServiceList() {
-		return services;
+		return serviceList;
 	}
 
 	public static UPnPDevice fromNodeList(NodeList list) {
@@ -179,12 +179,12 @@ class UPnPDevice {
 	}
 
 	public String getServiceListXml() {
-		XmlTag serviceList = new XmlTag("serviceList");
+		XmlTag serviceListTag = new XmlTag("serviceList");
 		StringBuffer sb = new StringBuffer();
-		for (UPnPService service : services) {
+		for (UPnPService service : serviceList) {
 			sb.append(service.toXml());
 		}
-		return serviceList.wrap(sb.toString());
+		return serviceListTag.wrap(sb.toString());
 	}
 
 	public String getDeviceListXml() {

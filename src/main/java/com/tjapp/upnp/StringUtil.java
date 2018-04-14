@@ -2,7 +2,7 @@ package com.tjapp.upnp;
 
 import java.util.regex.*;
 
-class StringUtil {
+public class StringUtil {
 
 	// https://stackoverflow.com/a/15567045/5676460
 	private final static Pattern LTRIM = Pattern.compile("^\\s+");

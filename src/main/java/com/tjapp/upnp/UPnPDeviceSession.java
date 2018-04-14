@@ -1,9 +1,10 @@
 package com.tjapp.upnp;
 
+import java.util.*;
 import java.net.*;
 
 
-class UPnPDeviceSession {
+public class UPnPDeviceSession {
 
 	private UPnPDeviceSessionStatus status = UPnPDeviceSessionStatus.PENDING;
 	private long registerTick;
@@ -20,8 +21,16 @@ class UPnPDeviceSession {
 		return device.getUdn();
 	}
 
+	public String getFriendlyName() {
+		return device.getFriendlyName();
+	}
+
 	public String getDeviceType() {
 		return device.getDeviceType();
+	}
+
+	public List<UPnPService> getServiceList() {
+		return device.getServiceList();
 	}
 
 	public UPnPActionResponse invokeAction(UPnPActionRequest request) throws Exception {

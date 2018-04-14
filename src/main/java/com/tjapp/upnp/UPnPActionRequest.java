@@ -6,7 +6,7 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 
-class UPnPActionRequest {
+public class UPnPActionRequest {
 
 	private String serviceType;
 	private String actionName;

@@ -4,7 +4,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-class UPnPActionArgument {
+public class UPnPActionArgument {
 	
 	private String name;
 	private UPnPActionArgumentDirection direction;

@@ -6,7 +6,7 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 
-class UPnPAction {
+public class UPnPAction {
 	
 	private String name;
 	private Map<String, UPnPActionArgument> arguments = new LinkedHashMap<>();
@@ -25,6 +25,16 @@ class UPnPAction {
 
 	public UPnPActionArgument getArgument(String name) {
 		return arguments.get(name);
+	}
+
+	public List<UPnPActionArgument> getArgumentList() {
+		List<UPnPActionArgument> list = new ArrayList<>();
+		Iterator<String> keys = arguments.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			list.add(arguments.get(key));
+		}
+		return list;
 	}
 
 	public static UPnPAction fromNodeList(NodeList list) {

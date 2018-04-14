@@ -9,9 +9,9 @@ class UPnPDeviceBuilder {
 
 	private static UPnPDeviceBuilder builder;
 	private static Logger logger = Logger.getLogger("UPnPDeviceBuilder");
-	// static {
-	// 	logger.setWriter(Logger.NULL_WRITER);
-	// }
+	static {
+		logger.setWriter(Logger.NULL_WRITER);
+	}
 
 	public static UPnPDeviceBuilder getInstance() {
 		if (builder == null) {
