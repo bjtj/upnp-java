@@ -10,6 +10,7 @@ public class UPnPService {
 
 	private UPnPScpd scpd;
 	private Map<String, UPnPProperty> properties = new LinkedHashMap<>();
+	private static Logger logger = Logger.getLogger("UPnPService");
 
     public String getServiceType() {
 		return properties.get("serviceType").getValue();
@@ -23,12 +24,27 @@ public class UPnPService {
 		return properties.get("SCPDURL").getValue();
 	}
 
+	public void setScpdUrl(String scpdUrl) {
+		logger.debug("set scpd url: " + scpdUrl);
+		setProperty("SCPDURL", scpdUrl);
+	}
+
 	public String getControlUrl() {
 		return properties.get("controlURL").getValue();
+	}
+	
+	public void setControlUrl(String controlUrl) {
+		logger.debug("set control url: " + controlUrl);
+		setProperty("controlURL", controlUrl);
 	}
 
 	public String getEventSubUrl() {
 		return properties.get("eventSubURL").getValue();
+	}
+	
+	public void setEventSubUrl(String eventSubUrl) {
+		logger.debug("set event sub url: " + eventSubUrl);
+		setProperty("eventSubURL", eventSubUrl);
 	}
 
 	public void setProperty(String name, String value) {

@@ -8,18 +8,26 @@ import org.xml.sax.helpers.*;
 class UPnPDevice {
 
 	private static Logger logger = Logger.getLogger("UPnPDevice");
-	static {
-		logger.setWriter(Logger.NULL_WRITER);
-	}
+	// static {
+	// 	logger.setWriter(Logger.NULL_WRITER);
+	// }
 	private Map<String, UPnPProperty> properties = new LinkedHashMap<>();
 	private List<UPnPDevice> childDevices = new ArrayList<>();
 	private List<UPnPService> services = new ArrayList<>();
 
-	public UPnPDevice () {		
+	public UPnPDevice () {
 	}
 
 	public String getUdn() {
 		return properties.get("UDN").getValue();
+	}
+
+	public void setUdn(String udn) {
+		logger.debug("set udn: " + udn);
+		setProperty("UDN", udn);
+		for (UPnPDevice childDevice : childDevices) {
+			childDevice.setUdn(udn);
+		}
 	}
 
 	public String getFriendlyName() {
@@ -28,6 +36,40 @@ class UPnPDevice {
 
 	public String getDeviceType() {
 		return properties.get("deviceType").getValue();
+	}
+
+	public void setScpdUrl(String fmt) {
+		fmt = fmt.replaceAll("\\$udn", getUdn());
+		for (UPnPService service : services) {
+			service.setScpdUrl(fmt.replaceAll("\\$serviceType", service.getServiceType()));
+		}
+		for (UPnPDevice childDevice : childDevices) {
+			childDevice.setScpdUrl(fmt);
+		}
+	}
+
+	public void setControlUrl(String fmt) {
+		fmt = fmt.replaceAll("\\$udn", getUdn());
+		for (UPnPService service : services) {
+			service.setControlUrl(fmt.replaceAll("\\$serviceType", service.getServiceType()));
+		}
+		for (UPnPDevice childDevice : childDevices) {
+			childDevice.setControlUrl(fmt);
+		}
+	}
+
+	public void setEventSubUrl(String fmt) {
+		fmt = fmt.replaceAll("\\$udn", getUdn());
+		for (UPnPService service : services) {
+			service.setEventSubUrl(fmt.replaceAll("\\$serviceType", service.getServiceType()));
+		}
+		for (UPnPDevice childDevice : childDevices) {
+			childDevice.setEventSubUrl(fmt);
+		}
+	}
+
+	public void setProperty(String name, String value) {
+		setProperty(new UPnPProperty(name, value));
 	}
 
 	public void setProperty(UPnPProperty property) {

@@ -1,5 +1,6 @@
 package com.tjapp.upnp;
 
+import java.io.*;
 import java.util.*;
 import java.net.*;
 
@@ -35,7 +36,7 @@ class NetworkManager {
 		return (addr instanceof Inet6Address);
 	}
 
-	public static InetAddress getIpv4() throws Exception {
+	public static InetAddress getIpv4() throws IOException {
 		Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
 		while (ifaces.hasMoreElements()) {
 			NetworkInterface iface = ifaces.nextElement();

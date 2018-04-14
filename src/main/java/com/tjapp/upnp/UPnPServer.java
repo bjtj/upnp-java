@@ -13,7 +13,7 @@ class UPnPServer {
 	private TimerThread timerThread;
 	private Map<String, UPnPEventSubscription> subscriptions = new LinkedHashMap<>();
 	private List<UPnPActionRequestHandler> actionHandlers = new ArrayList<>();
-	private Logger logger = Logger.getLogger("UPnPServer");
+	private static Logger logger = Logger.getLogger("UPnPServer");
 
 
 	/**
@@ -61,6 +61,7 @@ class UPnPServer {
 	public void addDevice(UPnPDevice device) {
 		UPnPDeviceSession session = new UPnPDeviceSession();
 		session.setDevice(device);
+		sessions.put(session.getUdn(), session);
 	}
 
 	public void removeDevice(UPnPDevice device) {
@@ -73,52 +74,7 @@ class UPnPServer {
 		ssdpReceiver = new SSDPReceiver(SSDP.MCAST_PORT);
 		new Thread(ssdpReceiver.getRunnable()).start();
 		httpServer = new HttpServer(port);
-		httpServer.bind("/upnp/.*", new HttpServer.Handler() {
-				public HttpResponse handle(HttpRequest request) throws Exception {
-					logger.debug(request.getPath());
-					String[] tokens = request.getPath().split("/");
-					String udn = tokens[1];
-					String type = tokens[tokens.length - 1];
-					UPnPDeviceSession session = sessions.get(udn);
-					if (session == null) {
-						return new HttpResponse(404);
-					}
-					// device description
-					if (type.equals("device.xml")) {
-						HttpResponse response = new HttpResponse(200);
-						response.setData(session.getDevice().toXml());
-						return response;
-					}
-					// scpd
-					if (type.equals("scpd.xml")) {
-						HttpResponse response = new HttpResponse(200);
-						String serviceType = tokens[2];
-						response.setData(session.getService(serviceType).getScpd().toXml());
-						return response;
-					}
-					// control
-					if (type.equals("control.xml")) {
-						if (type.equals("scpd.xml")) {
-						HttpResponse response = new HttpResponse(200);
-						String serviceType = tokens[2];
-						response.setData(
-							onActionRequest(
-								UPnPActionRequest.fromXml(request.text())).toXml());
-						return response;
-						}
-					}
-					// event subscribe
-					if (type.equals("subscribe.xml")) {
-						UPnPEventSubscription subscription = onEventSubsribe(request);
-						HttpResponse response = new HttpResponse(200);
-						response.setHeader("SID", subscription.getSid());
-						response.setHeader("TIMEOUT", "Second-" + subscription.getTimeoutSec());
-						return response;
-					}
-					
-					return new HttpResponse(404);
-				}
-			});;
+		httpServer.bind("/upnp/.*", httpRequestHandler);
 		httpServer.run();
 	}
 
@@ -156,12 +112,11 @@ class UPnPServer {
 		httpServer.stop();
 	}
 
-	public String getLocationUrl(UPnPDevice device) {
-		// String addr = NetworkManager.getIpv4().getHostAddress();
-		String addr = httpServer.getInetAddress().getHostAddress();
+	public String getLocationUrl(UPnPDevice device) throws IOException {
+		String addr = NetworkManager.getIpv4().getHostAddress();
 		logger.debug("location: " + addr);
 		return "http://" + addr + ":" + httpServer.getPort()
-			+ "/" + device.getUdn() + "/device.xml" ;
+			+ "/upnp/" + device.getUdn() + "/device.xml" ;
 	}
 
 	public void notifyAlive(UPnPDevice device) throws IOException {
@@ -233,6 +188,68 @@ class UPnPServer {
 		sender.close();
 	}
 
+	private HttpServer.Handler httpRequestHandler = new HttpServer.Handler() {
+			public HttpResponse handle(HttpRequest request) throws Exception {
+				logger.debug(request.getPath());
+				String[] tokens = request.getPath().split("/");
+				logger.debug("tokens: " + StringUtil.join(tokens, ", "));
+				String udn = tokens[2];
+				String type = tokens[tokens.length - 1];
+				logger.debug("http request for udn: " + udn + " and type: " + type);
+				UPnPDeviceSession session = sessions.get(udn);
+				if (session == null) {
+					logger.debug("session not found");
+					return new HttpResponse(404);
+				}
+				// device description
+				if (type.equals("device.xml")) {
+					logger.debug("serve device.xml");
+					HttpResponse response = new HttpResponse(200);
+					String xml = session.getDevice().toXml();
+					logger.debug("[device description]");
+					logger.debug(xml);
+					response.setData(xml);
+					return response;
+				}
+				// scpd
+				if (type.equals("scpd.xml")) {
+					logger.debug("serve scpd.xml");
+					HttpResponse response = new HttpResponse(200);
+					String serviceType = tokens[3];
+					String xml = session.getService(serviceType).getScpd().toXml();
+					logger.debug("[scpd]");
+					logger.debug(xml);
+					response.setData(xml);
+					return response;
+				}
+				// control
+				if (type.equals("control.xml")) {
+					logger.debug("serve control.xml");
+					if (type.equals("control.xml")) {
+						HttpResponse response = new HttpResponse(200);
+						String serviceType = tokens[3];
+						String xml = onActionRequest(UPnPActionRequest.fromXml(
+														 request.text())).toXml();
+						logger.debug("[action response]");
+						logger.debug(xml);
+						response.setData(xml);
+						return response;
+					}
+				}
+				// event subscribe
+				if (type.equals("subscribe.xml")) {
+					logger.debug("serve subscribe.xml");
+					UPnPEventSubscription subscription = onEventSubsribe(request);
+					HttpResponse response = new HttpResponse(200);
+					response.setHeader("SID", subscription.getSid());
+					response.setHeader("TIMEOUT", "Second-" + subscription.getTimeoutSec());
+					return response;
+				}
+				logger.debug("not found - " + type);
+				return new HttpResponse(404);
+			}
+		};
+
 	public void addActionRequestHandler(UPnPActionRequestHandler handler) {
 		actionHandlers.add(handler);
 	}
@@ -241,11 +258,38 @@ class UPnPServer {
 		actionHandlers.remove(handler);
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		UPnPServer server = new UPnPServer(8888);
 		new Thread(server.getRunnable()).start();
-		// add device
-		// notify alive
+
+		UPnPDevice device = UPnPDeviceBuilder.getInstance().buildResource("/light.xml");
+		device.setUdn("uuid:" + Uuid.random().toString());
+		device.setScpdUrl("/upnp/$udn/$serviceType/scpd.xml");
+		device.setControlUrl("/upnp/$udn/$serviceType/control.xml");
+		device.setEventSubUrl("/upnp/$udn/$serviceType/subscribe.xml");
+		server.addDevice(device);
+		server.addActionRequestHandler(new UPnPActionRequestHandler() {
+				public UPnPActionResponse handle(UPnPActionRequest request) {
+					UPnPActionResponse response = new UPnPActionResponse();
+					response.setServiceType(request.getServiceType());
+					response.setActionName(request.getActionName());
+					if (request.getServiceType().equals("urn:schemas-upnp-org:service:SwitchPower:1")) {
+						if (request.getActionName().equals("GetTarget")) {
+							response.setParameter("RetTargetValue", "1");
+						}
+					}
+					return response;
+				}
+			});
+		server.notifyAlive(device);
+		
+		logger.debug("waiting for 60 seconds...");
+		Thread.sleep(60 * 1000);
+
+		server.notifyByebye(device);
+
+		logger.debug("[stopping....]");
 		server.stop();
+		logger.debug("[upnp server] done");
 	}
 }

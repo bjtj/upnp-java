@@ -9,9 +9,9 @@ class UPnPDeviceBuilder {
 
 	private static UPnPDeviceBuilder builder;
 	private static Logger logger = Logger.getLogger("UPnPDeviceBuilder");
-	static {
-		logger.setWriter(Logger.NULL_WRITER);
-	}
+	// static {
+	// 	logger.setWriter(Logger.NULL_WRITER);
+	// }
 
 	public static UPnPDeviceBuilder getInstance() {
 		if (builder == null) {
@@ -34,6 +34,21 @@ class UPnPDeviceBuilder {
 			URL scpdUrl = new URL(url, service.getScpdUrl());
 			logger.debug("scpd url: " + scpdUrl);
 			String scpdXml = client.doGet(scpdUrl).text();
+			service.setScpd(UPnPScpd.fromXml(scpdXml));
+		}
+		return device;
+	}
+
+	public UPnPDevice buildResource(String path) throws Exception {
+		logger.debug("build resource: " + path);
+		byte[] data = IOUtil.dump(UPnPDeviceBuilder.class.getResourceAsStream(path));
+		UPnPDevice device = UPnPDevice.fromXml(new String(data));
+		List<UPnPService> services = device.getServiceList();
+		for (UPnPService service : services) {
+			String scpdUrl = service.getScpdUrl();
+			logger.debug("scpd url: " + scpdUrl);
+			byte[] scpdData = IOUtil.dump(UPnPDeviceBuilder.class.getResourceAsStream(scpdUrl));
+			String scpdXml = new String(scpdData);
 			service.setScpd(UPnPScpd.fromXml(scpdXml));
 		}
 		return device;

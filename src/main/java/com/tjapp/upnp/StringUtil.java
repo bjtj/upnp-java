@@ -40,4 +40,16 @@ class StringUtil {
 		}
 		return text;
 	}
+
+	public static String join(String[] strArr, String glue) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < strArr.length; i++) {
+			String str = strArr[i];
+			if (i > 0) {
+				sb.append(glue);
+			}
+			sb.append(str);
+		}
+		return sb.toString();
+	}
 }
