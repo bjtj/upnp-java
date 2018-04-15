@@ -97,13 +97,29 @@ class UPnPServer {
 		request.getHeader("NT");
 		String[] urls = StringUtil.unwrap(request.getHeader("CALLBACK"), "<", ">").split(" ");
 		int timeout = Integer.parseInt(request.getHeader("TIMEOUT").substring("Second-".length()));
-		UPnPEventSubscription subscription = new UPnPEventSubscription();
+		UPnPService service = getServiceWithControlUrl(request.getPath());
+		UPnPEventSubscription subscription = new UPnPEventSubscription(service);
 		String sid = Uuid.random().toString();
 		subscription.setSid(sid);
 		subscription.setCallbackUrls(new ArrayList<>(Arrays.asList(urls)));
 		subscription.setTimeoutSec(timeout);
 		subscriptions.put(sid, subscription);
 		return subscription;
+	}
+
+	public UPnPService getServiceWithControlUrl(String controlUrl) {
+		Iterator<String> keys = sessions.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			UPnPDeviceSession session = sessions.get(key);
+			List<UPnPService> services = session.getDevice().getServiceList();
+			for (UPnPService service : services) {
+				if (service.getControlUrl().equals(controlUrl)) {
+					return service;
+				}
+			}
+		}
+		return null;
 	}
 
 	public void stop() {

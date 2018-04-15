@@ -106,6 +106,15 @@ class UPnPDevice {
 		return null;
 	}
 
+	public boolean contains(UPnPService s) {
+		for (UPnPService service : serviceList) {
+			if (service == s) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<UPnPService> getServiceList() {
 		return serviceList;
 	}

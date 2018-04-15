@@ -216,7 +216,7 @@ class HttpServer {
 						sb.append((char)c);
 						if (sb.indexOf("\r\n\r\n") > 0) {
 							logger.debug(sb.toString());
-							request.setHttpHeader(parseHeader(sb.toString()));
+							request.setHttpHeader(HttpHeader.fromString(sb.toString()));
 							length = request.getContentLength();
 							if (length > 0) {
 								request.setData(new byte[length]);
@@ -284,15 +284,6 @@ class HttpServer {
 				return new HttpResponse(500);
 			}
             return new HttpResponse(404);
-		}
-
-		/**
-		 * 
-		 *
-		 */
-		public HttpHeader parseHeader(String headerString) {
-            HttpHeaderParser parser = new HttpHeaderParser();
-			return parser.parse(headerString);
 		}
 	}
 

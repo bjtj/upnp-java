@@ -2,7 +2,7 @@ package com.tjapp.upnp;
 
 import java.io.*;
 import java.util.*;
-
+import java.net.*;
 
 public class UPnPControlPoint {
 
@@ -14,6 +14,8 @@ public class UPnPControlPoint {
 	private boolean finishing;
 	private TimerThread timerThread;
 	private SSDPReceiver ssdpReceiver;
+	private List<OnDeviceListener> deviceListenerList = new ArrayList<>();
+	private List<OnEventListener> eventListenerList = new ArrayList<>();
 
 	/**
 	 * 
@@ -59,16 +61,26 @@ public class UPnPControlPoint {
 		ssdpReceiver = new SSDPReceiver(SSDP.MCAST_PORT);
 		ssdpReceiver.addHandler(new OnSSDPHandler() {
 				public void handle(SSDPHeader ssdp) {
-					if (ssdp.isNotify()) {
+					if (ssdp.isNotifyAlive()) {
 						logger.debug(ssdp.toString());
+						dispatch(ssdp);
+					} else if (ssdp.isNotifyByebye()) {
+						removeDevice(Usn.fromString(ssdp.getHeader("USN")).getUuid());
 					}
 				}
 			});
 		new Thread(ssdpReceiver.getRunnable()).start();
 		httpServer = new HttpServer(port);
 		httpServer.bind("/event", new HttpServer.Handler() {
-				public HttpResponse handle(HttpRequest request) {
+				public HttpResponse handle(HttpRequest request) throws Exception {
 					HttpResponse response = new HttpResponse(200);
+					String sid = request.getHeader("SID");
+					logger.debug("event - SID: " + sid);
+					UPnPEvent event = UPnPEvent.fromXml(request.text());
+					event.setSid(sid);
+					for (OnEventListener listener : eventListenerList) {
+						listener.onEvent(event);
+					}
 					return response;
 				}
 			});
@@ -96,41 +108,67 @@ public class UPnPControlPoint {
 			String key = keys.next();
 			UPnPDeviceSession session = sessions.get(key);
 			if (session.expired()) {
-				onDeviceSessionRemoved(session);
+				removeSubscription(session.getDevice());
 				keys.remove();
 			}
 		}
 	}
 
-	public void onDeviceSessionRemoved(UPnPDeviceSession session) {
-		String udn = session.getUdn();
+	public void removeSubscription(UPnPDevice device) {
 		Iterator<String> sids = subscriptions.keySet().iterator();
 		while (sids.hasNext()) {
 			String sid = sids.next();
-			if (subscriptions.get(sid).getUdn().equals(udn)) {
+			if (device.contains(subscriptions.get(sid).getService())) {
 				sids.remove();
 			}
 		}
 	}
 
-	public void subscribeEvent(UPnPEventSubscription subscription) throws IOException {
+	public String getCallbackUrl() throws IOException {
+		String addr = NetworkManager.getIpv4().getHostAddress();
+		return "http://" + addr + ":" + httpServer.getPort() + "/event" ;
+	}
+
+	public UPnPEventSubscription subscribeEvent(UPnPDeviceSession session, UPnPService service) throws Exception {
+		UPnPEventSubscription subscription = new UPnPEventSubscription(service);
+		subscription.addCallbackUrl(getCallbackUrl());
+		subscription.setTimeoutSec(30);
 		Map<String, String> headers = new LinkedHashMap<>();
 		headers.put("CALLBACK", subscription.getCallbackUrlsString());
 		headers.put("NT", "upnp:event");
 		headers.put("TIMEOUT", "Second-" + subscription.getTimeoutSec());
 		HttpClient client = new HttpClient();
-		HttpResponse response = client.doRequest(subscription.getEventSubUrl(), "SUBSCRIBE", headers, null);
+		URL url = new URL(session.getBaseUrl(), service.getEventSubUrl());
+		HttpResponse response = client.doRequest(url, "SUBSCRIBE", headers, null);
 		String sid = response.getHeader("SID");
 		subscription.setSid(sid);
 		subscriptions.put(sid, subscription);
+		return subscription;
 	}
 
-	public void unsubscribeEvent(UPnPEventSubscription subscription) throws IOException {
+	public void unsubscribeEvent(UPnPDeviceSession session, UPnPService service) throws IOException {
+		unsubscribeEvent(session, getEventSubscription(service));
+	}
+
+	public void unsubscribeEvent(UPnPDeviceSession session, UPnPEventSubscription subscription) throws IOException {
 		subscriptions.remove(subscription.getSid());
 		HttpClient client = new HttpClient();
 		Map<String, String> headers = new LinkedHashMap<>();
 		headers.put("SID", subscription.getSid());
-		client.doRequest(subscription.getEventSubUrl(), "UNSUBSCRIBE", headers, null);
+		URL url = new URL(session.getBaseUrl(), subscription.getService().getEventSubUrl());
+		client.doRequest(url, "UNSUBSCRIBE", headers, null);
+	}
+
+	public UPnPEventSubscription getEventSubscription(UPnPService service) {
+		Iterator<String> keys = subscriptions.keySet().iterator();
+		while (keys.hasNext()) {
+			String key = keys.next();
+			UPnPEventSubscription subscription = subscriptions.get(key);
+			if (subscription.getService() == service) {
+				return subscription;
+			}
+		}
+		return null;
 	}
 
 	public void msearch(String query, int mx) throws IOException {
@@ -153,11 +191,8 @@ public class UPnPControlPoint {
 			if (sessions.get(usn.getUuid()) != null) {
 				return;
 			}
-			UPnPDeviceSession session = new UPnPDeviceSession();
-			session.setBaseUrl(header.getHeader("location"));
-			session.setDevice(builder.build(header.getHeader("location")));
-			session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
-			sessions.put(usn.getUuid(), session);
+			URL location = new URL(header.getHeader("location"));
+			addDevice(location, builder.build(location));
 		} catch (FileNotFoundException e) {
 			logger.error("file not found: " + e.getMessage());
 		} catch (IOException e) {
@@ -165,6 +200,28 @@ public class UPnPControlPoint {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void addDevice(URL baseUrl, UPnPDevice device) {
+		sessions.put(device.getUdn(), UPnPDeviceSession.withDevice(baseUrl, device));
+		for (OnDeviceListener listener : deviceListenerList) {
+			listener.onDeviceAdded(device);
+		}
+	}
+
+	public void removeDevice(String udn) {
+		UPnPDeviceSession session = sessions.get(udn);
+		if (session != null) {
+			removeDevice(session.getDevice());
+		}
+	}
+
+	public void removeDevice(UPnPDevice device) {
+		for (OnDeviceListener listener : deviceListenerList) {
+			listener.onDeviceRemoved(device);
+		}
+		removeSubscription(device);
+		sessions.remove(device.getUdn());
 	}
 
 	public List<UPnPDeviceSession> candidates() {
@@ -175,6 +232,22 @@ public class UPnPControlPoint {
 			list.add(sessions.get(key));
 		}
 		return list;
+	}
+
+	public void addDeviceListener(OnDeviceListener listener) {
+		deviceListenerList.add(listener);
+	}
+
+	public void removeDeviceListener(OnDeviceListener listener) {
+		deviceListenerList.remove(listener);
+	}
+
+	public void addEventListener(OnEventListener listener) {
+		eventListenerList.add(listener);
+	}
+
+	public void removeEventListener(OnEventListener listener) {
+		eventListenerList.remove(listener);
 	}
 
 	public static void main(String[] args) throws Exception {

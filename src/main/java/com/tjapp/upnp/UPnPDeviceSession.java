@@ -10,11 +10,17 @@ public class UPnPDeviceSession {
 	private long registerTick;
 	private long timeout;
 	private UPnPDevice device;
-	private String baseUrl;
+	private URL baseUrl;
 
 	public UPnPDeviceSession () {
 		registerTick = Clock.getTickMilli();
 		timeout = 30 * 1000;	// default 30 seconds
+	}
+
+	public UPnPDeviceSession (UPnPDevice device) {
+		registerTick = Clock.getTickMilli();
+		timeout = 30 * 1000;	// default 30 seconds
+		this.device = device;
 	}
 
 	public String getUdn() {
@@ -34,7 +40,7 @@ public class UPnPDeviceSession {
 	}
 
 	public UPnPActionResponse invokeAction(UPnPActionRequest request) throws Exception {
-		return UPnPActionInvoke.invoke(new URL(baseUrl), request);
+		return UPnPActionInvoke.invoke(baseUrl, request);
 	}
 
 	public UPnPDevice getDevice() {
@@ -65,11 +71,15 @@ public class UPnPDeviceSession {
 		this.status = status;
 	}
 
-	public String getBaseUrl() {
+	public URL getBaseUrl() {
 		return baseUrl;
 	}
 
-	public void setBaseUrl(String baseUrl) {
+	public void setBaseUrl(String baseUrl) throws MalformedURLException {
+		this.baseUrl = new URL(baseUrl);
+	}
+
+	public void setBaseUrl(URL baseUrl) {
 		this.baseUrl = baseUrl;
 	}
 
@@ -87,5 +97,12 @@ public class UPnPDeviceSession {
 
 	public long getTimeout() {
 		return timeout;
+	}
+
+	public static UPnPDeviceSession withDevice(URL baseUrl, UPnPDevice device) {
+		UPnPDeviceSession session = new UPnPDeviceSession(device);
+		session.setBaseUrl(baseUrl);
+		session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
+		return session;
 	}
 }

@@ -56,9 +56,8 @@ class SSDPReceiver {
 	}
 
 	public void handleSSDPPacket(DatagramPacket packet) {
-		HttpHeaderParser parser = new HttpHeaderParser();
 		String text = new String(packet.getData(), 0, packet.getLength());
-		HttpHeader header = parser.parse(text);
+		HttpHeader header = HttpHeader.fromString(text);
 		SSDPHeader ssdp = new SSDPHeader(header);
 		for (OnSSDPHandler handler : handlers) {
 			handler.handle(ssdp);

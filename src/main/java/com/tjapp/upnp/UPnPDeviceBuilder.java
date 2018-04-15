@@ -23,9 +23,8 @@ class UPnPDeviceBuilder {
 	private UPnPDeviceBuilder () {		
 	}
 
-	public UPnPDevice build(String location) throws Exception {
+	public UPnPDevice build(URL url) throws Exception {
 		HttpClient client = new HttpClient();
-		URL url = new URL(location);
 		HttpResponse response = client.doGet(url);
 		String deviceDescription = response.text();
 		UPnPDevice device = UPnPDevice.fromXml(deviceDescription);

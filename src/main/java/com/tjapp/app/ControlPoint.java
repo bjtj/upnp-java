@@ -7,6 +7,10 @@ import java.util.regex.*;
 
 class ControlPoint {
 
+	/**
+	 * 
+	 *
+	 */
 	private static class Selection {
 		private UPnPDeviceSession session;
 		private String serviceType;
@@ -52,11 +56,24 @@ class ControlPoint {
 		System.out.println(str);
 	}
 
+	/**
+	 * 
+	 *
+	 */
 	public static void main(String[] args) throws Exception {
 
 		Selection selection = new Selection();
 		
 		UPnPControlPoint cp = new UPnPControlPoint(9000);
+		cp.addEventListener(new OnEventListener() {
+				public void onEvent(UPnPEvent event) {
+					println("Event sid: " + event.getSid());
+					List<UPnPProperty> list = event.getPropertyList();
+					for (UPnPProperty property : list) {
+						println(" * " + property.getName() + ": " + property.getValue());
+					}
+				}
+			});
 		new Thread(cp.getRunnable()).start();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
@@ -111,6 +128,14 @@ class ControlPoint {
 					String key = keys.next();
 					println(" * " + key + ": " + params.get(key));
 				}
+			} else if (line.equals("subscribe")) {
+				UPnPDeviceSession session = selection.getSession();
+				UPnPService service = session.getService(selection.getServiceType());
+				cp.subscribeEvent(session, service);
+			} else if (line.equals("unsubscribe")) {
+				UPnPDeviceSession session = selection.getSession();
+				UPnPService service = session.getService(selection.getServiceType());
+				cp.unsubscribeEvent(session, service);
 			} else if (line.matches("[0-9]+")) {
 				int idx = Integer.parseInt(line);
 				println("Select index: " + idx);

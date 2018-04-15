@@ -71,7 +71,7 @@ class SSDPMsearchSender {
 	
 	public void handle(byte[] data, int len, SocketAddress remoteAddr) {
 		String text = new String(data, 0, len);
-		SSDPHeader header = new SSDPHeader(HttpHeaderParser.parse(text));
+		SSDPHeader header = new SSDPHeader(HttpHeader.fromString(text));
 		list.add(header);
 	}
 	

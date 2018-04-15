@@ -3,7 +3,7 @@ package com.tjapp.upnp;
 import java.util.*;
 
 
-class UPnPProperty {
+public class UPnPProperty {
 
 	private static Logger logger = Logger.getLogger("UPnPProperty");
 

@@ -23,12 +23,11 @@ class HttpRequest {
 	}
 
 	public int getContentLength() {
-		String len = header.getHeader("Content-Length");
-		return (len == null ? -1 : Integer.parseInt(len));
+		return header.getContentLength();
 	}
 
 	public String getContentType() {
-		return header.getHeader("Content-Type");
+		return header.getContentType();
 	}
 
 	public boolean keepConnect() {

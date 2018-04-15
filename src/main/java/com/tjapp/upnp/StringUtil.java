@@ -31,6 +31,10 @@ public class StringUtil {
 		return str == null || str.length() == 0;
 	}
 
+	public static String wrap(String text, String start, String end) {
+		return start + text + end;
+	}
+
 	public static String unwrap(String text, String start, String end) {
 		if (text.startsWith(start)) {
 			text = text.substring(start.length());

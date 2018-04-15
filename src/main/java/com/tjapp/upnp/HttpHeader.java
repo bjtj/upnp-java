@@ -50,6 +50,25 @@ class HttpHeader {
 		assert ret.length == 3;
 		return ret;
 	}
+
+	public int getContentLength() {
+		if (getHeader("Content-Length") == null) {
+			return -1;
+		}
+		return Integer.parseInt(getHeader("Content-Length"));
+	}
+
+	public void setContentLength(int length) {
+		setHeader("Content-Length", Integer.toString(length));
+	}
+
+	public String getContentType() {
+		return getHeader("Content-Type");
+	}
+
+	public void setContentType(String contentType) {
+		setHeader("Content-Type", contentType);
+	}
 	
 	public String getHeader(String name) {
 		List<String> values = headerFields.get(name);
@@ -65,6 +84,7 @@ class HttpHeader {
 		}
 		return null;
 	}
+	
 	public void setHeader(String name, String value) {
 		List<String> values = headerFields.get(name);
 		if (values == null) {
@@ -76,6 +96,7 @@ class HttpHeader {
 			values.add(value);
 		}
 	}
+	
 	public void setHeaders(String name, String[] values) {
 		headerFields.put(name, new ArrayList<>(Arrays.asList(values)));
 	}
@@ -132,5 +153,26 @@ class HttpHeader {
 	public void copy(HttpHeader header) {
 		firstLine = header.getFirstLine();
 		headerFields = header.getHeaderFields();
+	}
+
+	public static String[] parseHeaderField(String line) {
+		int idx = line.indexOf(":");
+		if (idx >= 0) {
+			String key = line.substring(0, idx);
+			String value = line.substring(idx + 1).trim();
+			return new String[]{key, value};
+		}
+		return new String[]{line, null};
+	}
+
+	public static HttpHeader fromString(String text) {
+		HttpHeader header = new HttpHeader();
+		String[] lines = text.split("\r\n");
+		header.setFirstLine(lines[0]);
+		for (int i = 1; i < lines.length; i++) {
+			String[] tokens = parseHeaderField(lines[i]);
+			header.appendHeader(tokens[0], tokens[1]);
+		}
+		return header;
 	}
 }

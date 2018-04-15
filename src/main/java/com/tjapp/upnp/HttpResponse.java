@@ -8,7 +8,9 @@ class HttpResponse {
 	public HttpHeader header;
 	public byte[] data;
 
-	
+	public HttpResponse () {
+		
+	}
 	public HttpResponse (int code) {
 		this.header = new HttpHeader();
 		this.header.setFirstLine("HTTP/1.1 " + code + " " + HttpStatusCode.getMessage(code));
@@ -45,12 +47,11 @@ class HttpResponse {
 	}
 	
 	public int getContentLength() {
-		String len = header.getHeader("Content-Length");
-		return (len == null ? -1 : Integer.parseInt(len));
+		return header.getContentLength();
 	}
 
 	public String getContentType() {
-		return header.getHeader("Content-Type");
+		return header.getContentType();
 	}
 
 	public void setHeader(String name, String value) {

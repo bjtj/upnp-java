@@ -7,7 +7,6 @@ public class XmlTag {
 
 	private String ns;
 	private String name;
-	// private List<Pair<String, String>> attrs = new ArrayList<>();
 	private Map<String, String> attributes = new LinkedHashMap<>();
 
 	public XmlTag(String name) {
@@ -19,21 +18,10 @@ public class XmlTag {
 		this.name = name;
 	}
 
-	// public XmlTag(String name, List<Pair<String, String>> attrs) {
-	// 	this.name = name;
-	// 	this.attrs = attrs;
-	// }
-
 	public XmlTag(String name, Map<String, String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
-
-	// public XmlTag(String ns, String name, List<Pair<String, String>> attrs) {
-	// 	this.ns = ns;
-	// 	this.name = name;
-	// 	this.attrs = attrs;
-	// }
 
 	public XmlTag(String ns, String name, Map<String, String> attributes) {
 		this.ns = ns;
@@ -60,17 +48,6 @@ public class XmlTag {
 	public String nsName() {
 		return (isEmpty(ns) ? name : (ns + ":" + name));
 	}
-
-	// public String strAttributes() {
-	// 	StringBuffer sb = new StringBuffer();
-	// 	for (Pair<String, String> attr : attrs) {
-	// 		if (sb.length() > 0) {
-	// 			sb.append(" ");
-	// 		}
-	// 		sb.append(attr.getFirst() + "=\"" + attr.getSecond() + "\"");
-	// 	}
-	// 	return sb.toString();
-	// }
 
 	public String getAttributeString() {
 		StringBuffer sb = new StringBuffer();
@@ -111,25 +88,9 @@ public class XmlTag {
 		this.name = name;
 	}
 
-	// public void addAttribute(String name, String value) {
-	// 	addAttribute(new Pair<String, String>(name, value));
-	// }
-
-	// public void addAttribute(Pair<String, String> pair) {
-	// 	attrs.add(pair);
-	// }
-
-	// public List<Pair<String, String>> getAttributes() {
-	// 	return attrs;
-	// }
-
 	public Map<String, String> getAttributes() {
 		return attributes;
 	}
-
-	// public void setAttributes(List<Pair<String, String>> attrs) {
-	// 	this.attrs = attrs;
-	// }
 
 	public void setAttribute(String name, String value) {
 		attributes.put(name, value);
