@@ -57,10 +57,16 @@ class SSDPReceiver {
 
 	public void handleSSDPPacket(DatagramPacket packet) {
 		String text = new String(packet.getData(), 0, packet.getLength());
-		HttpHeader header = HttpHeader.fromString(text);
-		SSDPHeader ssdp = new SSDPHeader(header);
+		SSDPHeader ssdp = SSDPHeader.fromString(text);
+		ssdp.setRemoteAddress(packet.getSocketAddress());
+		
 		for (OnSSDPHandler handler : handlers) {
-			handler.handle(ssdp);
+			try {
+				handler.handle(ssdp);
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

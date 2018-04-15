@@ -5,7 +5,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-class UPnPDevice {
+public class UPnPDevice {
 
 	private static Logger logger = Logger.getLogger("UPnPDevice");
 	static {

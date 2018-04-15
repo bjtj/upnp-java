@@ -5,7 +5,7 @@ import java.io.*;
 import java.util.*;
 
 
-class UPnPDeviceBuilder {
+public class UPnPDeviceBuilder {
 
 	private static UPnPDeviceBuilder builder;
 	private static Logger logger = Logger.getLogger("UPnPDeviceBuilder");

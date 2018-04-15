@@ -1,13 +1,25 @@
 package com.tjapp.upnp;
 
+import java.net.*;
+
 class SSDPHeader extends HttpHeader {
+
+	private SocketAddress remoteAddr;
 
 	public SSDPHeader(HttpHeader header) {
 		copy(header);
 	}
+
+	public void setRemoteAddress(SocketAddress remoteAddr) {
+		this.remoteAddr = remoteAddr;
+	}
+
+	public SocketAddress getRemoteAddress() {
+		return remoteAddr;
+	}
 	
 	public boolean isNotify() {
-		return getFirstParts()[0] == "NOTIFY";
+		return "NOTIFY".equals(getFirstParts()[0]);
 	}
 
 	public boolean isNotifyAlive() {
@@ -23,10 +35,14 @@ class SSDPHeader extends HttpHeader {
 	}
 	
 	public boolean isMsearch() {
-		return getFirstParts()[0] == "M-SEARCH";
+		return "M-SEARCH".equals(getFirstParts()[0]);
 	}
 	
 	public boolean isResponse() {
-		return getFirstParts()[0].startsWith("HTTP");
+		return "HTTP".startsWith(getFirstParts()[0]);
+	}
+
+	public static SSDPHeader fromString(String str) {
+		return new SSDPHeader(HttpHeader.fromString(str));
 	}
 }

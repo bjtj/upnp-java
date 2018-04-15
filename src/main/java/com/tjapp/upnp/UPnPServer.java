@@ -2,9 +2,9 @@ package com.tjapp.upnp;
 
 import java.io.*;
 import java.util.*;
+import java.net.*;
 
-
-class UPnPServer {
+public class UPnPServer {
 
 	private int port;
 	private HttpServer httpServer;
@@ -72,6 +72,41 @@ class UPnPServer {
 		timerThread = new TimerThread(this, 10 * 1000);
 		timerThread.start();
 		ssdpReceiver = new SSDPReceiver(SSDP.MCAST_PORT);
+		ssdpReceiver.addHandler(new OnSSDPHandler() {
+				public void handle(SSDPHeader ssdp) throws IOException {
+					logger.debug("ssdp recevier");
+					if (ssdp.isMsearch()) {
+						ssdp.getHeader("MX");
+						ssdp.getHeader("MAN");
+						String searchType = ssdp.getHeader("ST");
+						logger.debug("search type: " + searchType);
+						if (searchType.equals("ssdp:all") ||
+							searchType.equals("upnp:rootdevice")) {
+							Iterator<String> keys = sessions.keySet().iterator();
+							while (keys.hasNext()) {
+								String key = keys.next();
+								UPnPDeviceSession session = sessions.get(key);
+								responseMsearch(ssdp.getRemoteAddress(), session);
+							}
+						} else {
+							Iterator<String> keys = sessions.keySet().iterator();
+							while (keys.hasNext()) {
+								String key = keys.next();
+								UPnPDeviceSession session = sessions.get(key);
+								if (searchType.equals(session.getDeviceType())) {
+									responseMsearch(ssdp.getRemoteAddress(), session.getDevice());
+								}
+								List<UPnPService> serviceList = session.getServiceList();
+								for (UPnPService service : serviceList) {
+									if (searchType.equals(service.getServiceType())) {
+										responseMsearch(ssdp.getRemoteAddress(), session.getDevice(), service);
+									}
+								}
+							}
+						}
+					}
+				}
+			});
 		new Thread(ssdpReceiver.getRunnable()).start();
 		httpServer = new HttpServer(port);
 		httpServer.bind("/upnp/.*", httpRequestHandler);
@@ -133,6 +168,84 @@ class UPnPServer {
 		logger.debug("location: " + addr);
 		return "http://" + addr + ":" + httpServer.getPort()
 			+ "/upnp/" + device.getUdn() + "/device.xml" ;
+	}
+
+	public void responseMsearch(SocketAddress remoteAddr, UPnPDeviceSession session) throws IOException {
+
+		DatagramSocket socket = new DatagramSocket();
+
+		UPnPDevice device = session.getDevice();
+		
+		HttpHeader header = new HttpHeader();
+		header.setFirstLine("HTTP/1.1 200 OK");
+		header.setHeader("Cache-Control", "max-age=1800");
+		header.setHeader("EXT", "");
+		header.setHeader("Location", getLocationUrl(device));
+		header.setHeader("Server", Config.SERVER_NAME);
+
+		DatagramPacket packet = null;
+
+		// uuid only
+		//  * <DO NOT SEND>
+		
+		// uuid :: upnp:rootdevice
+		header.setHeader("ST", "upnp:rootdevice");
+		header.setHeader("USN", device.getUdn() + "::upnp:rootdevice");
+		packet = new DatagramPacket(header.toString().getBytes(), header.toString().getBytes().length, remoteAddr);
+		socket.send(packet);
+		
+		// each devices
+		header.setHeader("ST", device.getDeviceType());
+		header.setHeader("USN", device.getUdn() + "::" + device.getDeviceType());
+		packet = new DatagramPacket(header.toString().getBytes(), header.toString().getBytes().length, remoteAddr);
+		socket.send(packet);
+		
+		// each services
+		List<UPnPService> serviceList = device.getServiceList();
+		for (UPnPService service : serviceList) {
+			header.setHeader("NT", service.getServiceType());
+			header.setHeader("USN", device.getUdn() + "::" + service.getServiceType());
+			packet = new DatagramPacket(header.toString().getBytes(), header.toString().getBytes().length, remoteAddr);
+			socket.send(packet);
+		}
+
+		socket.close();
+	}
+
+	public void responseMsearch(SocketAddress remoteAddr, UPnPDevice device) throws IOException {
+		DatagramSocket socket = new DatagramSocket();
+
+		HttpHeader header = new HttpHeader();
+		header.setFirstLine("HTTP/1.1 200 OK");
+		header.setHeader("Cache-Control", "max-age=1800");
+		header.setHeader("EXT", "");
+		header.setHeader("Location", getLocationUrl(device));
+		header.setHeader("Server", Config.SERVER_NAME);
+		
+		header.setHeader("ST", device.getDeviceType());
+		header.setHeader("USN", device.getUdn() + "::" + device.getDeviceType());
+		DatagramPacket packet = new DatagramPacket(header.toString().getBytes(), header.toString().getBytes().length, remoteAddr);
+		socket.send(packet);
+
+		socket.close();
+	}
+
+	public void responseMsearch(SocketAddress remoteAddr, UPnPDevice device, UPnPService service) throws IOException {
+		DatagramSocket socket = new DatagramSocket();
+		
+		HttpHeader header = new HttpHeader();
+		header.setFirstLine("HTTP/1.1 200 OK");
+		header.setHeader("Cache-Control", "max-age=1800");
+		header.setHeader("EXT", "");
+		header.setHeader("Location", getLocationUrl(device));
+		header.setHeader("Server", Config.SERVER_NAME);
+		
+		header.setHeader("NT", service.getServiceType());
+		header.setHeader("USN", device.getUdn() + "::" + service.getServiceType());
+		DatagramPacket packet = new DatagramPacket(header.toString().getBytes(), header.toString().getBytes().length, remoteAddr);
+		socket.send(packet);
+
+		socket.close();
 	}
 
 	public void notifyAlive(UPnPDevice device) throws IOException {

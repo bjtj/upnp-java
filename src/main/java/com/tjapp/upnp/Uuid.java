@@ -3,7 +3,7 @@ package com.tjapp.upnp;
 import java.util.*;
 
 // https://tools.ietf.org/html/rfc4122.html
-class Uuid {
+public class Uuid {
 	String uuid;
 
 	public Uuid () {
