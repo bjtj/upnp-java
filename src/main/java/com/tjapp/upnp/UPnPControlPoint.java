@@ -62,7 +62,6 @@ public class UPnPControlPoint {
 		ssdpReceiver.addHandler(new OnSSDPHandler() {
 				public void handle(SSDPHeader ssdp) {
 					if (ssdp.isNotifyAlive()) {
-						logger.debug(ssdp.toString());
 						dispatch(ssdp);
 					} else if (ssdp.isNotifyByebye()) {
 						removeDevice(Usn.fromString(ssdp.getHeader("USN")).getUuid());
@@ -103,15 +102,18 @@ public class UPnPControlPoint {
 	}
 
 	public void onTimer() {
-		Iterator<String> keys = sessions.keySet().iterator();
-		while (keys.hasNext()) {
-			String key = keys.next();
-			UPnPDeviceSession session = sessions.get(key);
-			if (session.expired()) {
-				removeSubscription(session.getDevice());
-				keys.remove();
-			}
+	    Iterator<String> keys = sessions.keySet().iterator();
+	    while (keys.hasNext()) {
+		String key = keys.next();
+		UPnPDeviceSession session = sessions.get(key);
+		if (session.isExpired()) {
+		    for (OnDeviceListener listener : deviceListenerList) {
+			listener.onDeviceRemoved(session.getDevice());
+		    }
+		    removeSubscription(session.getDevice());
+		    keys.remove();
 		}
+	    }
 	}
 
 	public void removeSubscription(UPnPDevice device) {
@@ -171,24 +173,39 @@ public class UPnPControlPoint {
 		return null;
 	}
 
+    public void msearchAsync(String query, int mx) {
+	new Thread(new Runnable() {
+		public void run() {
+		    try {
+			UPnPControlPoint.this.msearch(query, mx);
+		    } catch (IOException e) {
+			e.printStackTrace();
+		    }
+		}
+	    }).start();
+    }
+
 	public void msearch(String query, int mx) throws IOException {
 		SSDPMsearchSender sender = new SSDPMsearchSender(query, mx);
+		sender.setOnSSDPHandler(new OnSSDPHandler() {
+			public void handle(SSDPHeader header) {
+			    UPnPControlPoint.this.dispatch(header);
+			}
+		    });
 		sender.send();
 		while (sender.timeout() == false) {
 			sender.pending(10);
 		}
 		sender.close();
-		List<SSDPHeader> list = sender.getList();
-		for (SSDPHeader header : list) {
-			dispatch(header);
-		}
 	}
 
 	private void dispatch(SSDPHeader header) {
 		UPnPDeviceBuilder builder = UPnPDeviceBuilder.getInstance();
 		try {
 			Usn usn = Usn.fromString(header.getHeader("usn"));
-			if (sessions.get(usn.getUuid()) != null) {
+			UPnPDeviceSession session = sessions.get(usn.getUuid());
+			if (session != null) {
+			    session.renewTimeout();
 				return;
 			}
 			URL location = new URL(header.getHeader("location"));
@@ -272,7 +289,6 @@ public class UPnPControlPoint {
 				logger.debug("[pending] not ready yet - " + session.getDevice().getFriendlyName());
 				break;
 			case COMPLETE:
-				logger.debug("device: " + session.getDevice().getFriendlyName() + " / " + session.getDeviceType());
 				if (session.getDeviceType().equals("urn:schemas-upnp-org:device:BinaryLight:1")) {
 					UPnPService service = session.getService("urn:schemas-upnp-org:service:SwitchPower:1");
 					UPnPActionRequest request = new UPnPActionRequest(service.getControlUrl(), service.getServiceType(), "SetTarget");
@@ -290,7 +306,6 @@ public class UPnPControlPoint {
 					request.setParameter("RequestedCount", "0");
 					request.setParameter("SortCriteria", "");
 					UPnPActionResponse resp = session.invokeAction(request);
-					logger.debug("[invoke action]");
 				} else {
 					List<UPnPService> services = session.getDevice().getServiceList();
 					for (UPnPService service : services) {

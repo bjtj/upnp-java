@@ -5,7 +5,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-class UPnPScpd {
+public class UPnPScpd {
 
 	private int majorVersion;
 	private int minorVersion;
@@ -41,8 +41,8 @@ class UPnPScpd {
 		actions.put(action.getName(), action);
 	}
 
-	public Map<String, UPnPAction> getActions() {
-		return actions;
+	public List<UPnPAction> getActions() {
+	    return new ArrayList<UPnPAction>(actions.values());
 	}
 
 	public UPnPStateVariable getStateVariable(String name) {

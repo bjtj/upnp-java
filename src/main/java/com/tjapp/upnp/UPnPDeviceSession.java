@@ -6,103 +6,107 @@ import java.net.*;
 
 public class UPnPDeviceSession {
 
-	private UPnPDeviceSessionStatus status = UPnPDeviceSessionStatus.PENDING;
-	private long registerTick;
-	private long timeout;
-	private UPnPDevice device;
-	private URL baseUrl;
+    private UPnPDeviceSessionStatus status = UPnPDeviceSessionStatus.PENDING;
+    private long registerTick;
+    private long timeout;
+    private UPnPDevice device;
+    private URL baseUrl;
 
-	public UPnPDeviceSession () {
-		registerTick = Clock.getTickMilli();
-		timeout = 30 * 1000;	// default 30 seconds
-	}
+    public UPnPDeviceSession () {
+	registerTick = Clock.getTickMilli();
+	timeout = 30 * 1000;	// default 30 seconds
+    }
 
-	public UPnPDeviceSession (UPnPDevice device) {
-		registerTick = Clock.getTickMilli();
-		timeout = 30 * 1000;	// default 30 seconds
-		this.device = device;
-	}
+    public UPnPDeviceSession (UPnPDevice device) {
+	registerTick = Clock.getTickMilli();
+	timeout = 30 * 1000;	// default 30 seconds
+	this.device = device;
+    }
 
-	public String getUdn() {
-		return device.getUdn();
-	}
+    public String getUdn() {
+	return device.getUdn();
+    }
 
-	public String getFriendlyName() {
-		return device.getFriendlyName();
-	}
+    public String getFriendlyName() {
+	return device.getFriendlyName();
+    }
 
-	public String getDeviceType() {
-		return device.getDeviceType();
-	}
+    public String getDeviceType() {
+	return device.getDeviceType();
+    }
 
-	public List<UPnPService> getServiceList() {
-		return device.getServiceList();
-	}
+    public List<UPnPService> getServiceList() {
+	return device.getServiceList();
+    }
 
-	public UPnPActionResponse invokeAction(UPnPActionRequest request) throws Exception {
-		return UPnPActionInvoke.invoke(baseUrl, request);
-	}
+    public UPnPActionResponse invokeAction(UPnPActionRequest request) throws Exception {
+	return UPnPActionInvoke.invoke(baseUrl, request);
+    }
 
-	public UPnPDevice getDevice() {
-		return device;
-	}
+    public UPnPDevice getDevice() {
+	return device;
+    }
 
-	public void setDevice(UPnPDevice device) {
-		this.device = device;
-	}
+    public void setDevice(UPnPDevice device) {
+	this.device = device;
+    }
 
-	public UPnPService getService(String serviceType) {
-		return device.getService(serviceType);
-	}
+    public UPnPService getService(String serviceType) {
+	return device.getService(serviceType);
+    }
 
-	public long lifetime() {
-		return (Clock.getTickMilli() - registerTick);
-	}
+    public long lifetime() {
+	return (Clock.getTickMilli() - registerTick);
+    }
 
-	public boolean expired() {
-		return (lifetime() >= timeout);
-	}
+    public boolean isExpired() {
+	return (lifetime() >= timeout);
+    }
 
-	public UPnPDeviceSessionStatus getStatus() {
-		return status;
-	}
+    public UPnPDeviceSessionStatus getStatus() {
+	return status;
+    }
 
-	public void setStatus(UPnPDeviceSessionStatus status) {
-		this.status = status;
-	}
+    public void setStatus(UPnPDeviceSessionStatus status) {
+	this.status = status;
+    }
 
-	public URL getBaseUrl() {
-		return baseUrl;
-	}
+    public URL getBaseUrl() {
+	return baseUrl;
+    }
 
-	public void setBaseUrl(String baseUrl) throws MalformedURLException {
-		this.baseUrl = new URL(baseUrl);
-	}
+    public void setBaseUrl(String baseUrl) throws MalformedURLException {
+	this.baseUrl = new URL(baseUrl);
+    }
 
-	public void setBaseUrl(URL baseUrl) {
-		this.baseUrl = baseUrl;
-	}
+    public void setBaseUrl(URL baseUrl) {
+	this.baseUrl = baseUrl;
+    }
 
-	public void setRegisterTick(long registerTick) {
-		this.registerTick = registerTick;
-	}
+    public void renewTimeout() {
+	registerTick = Clock.getTickMilli();
+    }
 
-	public long getRegisterTick() {
-		return registerTick;
-	}
+    public void setRegisterTick(long registerTick) {
+	this.registerTick = registerTick;
+    }
 
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
+    public long getRegisterTick() {
+	return registerTick;
+    }
 
-	public long getTimeout() {
-		return timeout;
-	}
+    public void setTimeout(long timeout) {
+	this.timeout = timeout;
+    }
 
-	public static UPnPDeviceSession withDevice(URL baseUrl, UPnPDevice device) {
-		UPnPDeviceSession session = new UPnPDeviceSession(device);
-		session.setBaseUrl(baseUrl);
-		session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
-		return session;
-	}
+    public long getTimeout() {
+	return timeout;
+    }
+
+    public static UPnPDeviceSession withDevice(URL baseUrl, UPnPDevice device) {
+	UPnPDeviceSession session = new UPnPDeviceSession(device);
+	session.setBaseUrl(baseUrl);
+	session.setStatus(UPnPDeviceSessionStatus.COMPLETE);
+	return session;
+    }
 }

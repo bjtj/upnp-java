@@ -33,7 +33,7 @@ class UPnPEventSubscription {
 		return (Clock.getTickMilli() - tick);
 	}
 
-	public boolean expired() {
+	public boolean isExpired() {
 		return (lifetime() >= (timeoutSec * 1000));
 	}
 
