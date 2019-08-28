@@ -1,4 +1,4 @@
-package com.tjapp.app;
+package com.tjapp.upnp.app;
 
 import com.tjapp.upnp.*;
 import java.util.*;
@@ -67,7 +67,7 @@ class ControlPoint {
 
 	Selection selection = new Selection();
 		
-	UPnPControlPoint cp = new UPnPControlPoint(9000);
+	UPnPControlPoint cp = new UPnPControlPoint(0);
 	cp.addEventListener(new OnEventListener() {
 		public void onEvent(UPnPEvent event) {
 		    println("Event sid: " + event.getSid());

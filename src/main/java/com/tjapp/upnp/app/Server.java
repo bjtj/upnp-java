@@ -1,4 +1,4 @@
-package com.tjapp.app;
+package com.tjapp.upnp.app;
 
 import com.tjapp.upnp.*;
 import java.io.*;
