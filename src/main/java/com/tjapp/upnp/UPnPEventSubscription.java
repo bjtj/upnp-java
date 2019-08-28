@@ -3,7 +3,7 @@ package com.tjapp.upnp;
 import java.util.*;
 
 
-class UPnPEventSubscription {
+public class UPnPEventSubscription {
 
 	private UPnPService service;
 	private String sid;

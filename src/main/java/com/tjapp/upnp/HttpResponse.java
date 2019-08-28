@@ -3,7 +3,7 @@ package com.tjapp.upnp;
 import java.io.*;
 import java.net.*;
 
-class HttpResponse {
+public class HttpResponse {
 	
 	public HttpHeader header;
 	public byte[] data;

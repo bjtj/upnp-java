@@ -6,7 +6,7 @@ import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
 
-class UPnPStateVariable {
+public class UPnPStateVariable {
 	
 	private boolean sendEvents;
 	private boolean multicast;

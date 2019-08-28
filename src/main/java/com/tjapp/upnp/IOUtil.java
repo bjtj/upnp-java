@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 
 
-class IOUtil {
+public class IOUtil {
 
 	public static byte[] dump(InputStream in) throws IOException {
 		ByteArrayOutputStream ba = new ByteArrayOutputStream();

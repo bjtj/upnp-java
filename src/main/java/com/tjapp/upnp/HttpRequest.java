@@ -1,6 +1,6 @@
 package com.tjapp.upnp;
 
-class HttpRequest {
+public class HttpRequest {
 	
 	private HttpHeader header;
 	private byte[] data;

@@ -2,7 +2,7 @@ package com.tjapp.upnp;
 
 import java.util.*;
 
-class HttpHeader {
+public class HttpHeader {
 
 	private static Logger logger = Logger.getLogger("HttpHeader");
 

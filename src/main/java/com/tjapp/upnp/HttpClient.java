@@ -6,7 +6,7 @@ import java.util.*;
 
 
 
-class HttpClient {
+public class HttpClient {
 
 	private static Logger logger = Logger.getLogger("HttpClient");
 

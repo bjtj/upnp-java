@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
-class NetworkManager {
+public class NetworkManager {
 
 	private static Logger logger = Logger.getLogger("NetworkManager");
 

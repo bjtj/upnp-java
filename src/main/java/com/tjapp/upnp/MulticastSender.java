@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 
 
-class MulticastSender {
+public class MulticastSender {
 
 	private DatagramSocket socket;
 	private SocketAddress targetAddr;

@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-class SSDPReceiver {
+public class SSDPReceiver {
 	
     private int port;
     private MulticastSocket sock;

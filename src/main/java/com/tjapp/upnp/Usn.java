@@ -1,6 +1,6 @@
 package com.tjapp.upnp;
 
-class Usn {
+public class Usn {
 	
     private String uuid;
     private String urn;

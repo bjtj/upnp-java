@@ -6,7 +6,7 @@ import java.net.*;
 import java.nio.*;
 import java.nio.channels.*;
 
-class SSDPMsearchSender {
+public class SSDPMsearchSender {
 
     private static Logger logger = Logger.getLogger("SSDPMsearchSender");
 	

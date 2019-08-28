@@ -9,7 +9,7 @@ import java.net.*;
  * http server
  *
  */
-class HttpServer {
+public class HttpServer {
 
     private Binder binder = new Binder();
     private int port;

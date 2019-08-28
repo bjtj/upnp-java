@@ -4,7 +4,7 @@ import java.net.*;
 import java.util.*;
 
 
-class UPnPActionInvoke {
+public class UPnPActionInvoke {
 
 	private static Logger logger = Logger.getLogger("UPnPActionInvoke");
 	static {

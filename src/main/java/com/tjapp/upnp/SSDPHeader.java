@@ -2,7 +2,7 @@ package com.tjapp.upnp;
 
 import java.net.*;
 
-class SSDPHeader extends HttpHeader {
+public class SSDPHeader extends HttpHeader {
 
 	private SocketAddress remoteAddr;
 

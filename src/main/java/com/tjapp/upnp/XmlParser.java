@@ -7,7 +7,7 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
 
-class XmlParser {
+public class XmlParser {
 
 	public static Document parse(String textXml) throws Exception {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
