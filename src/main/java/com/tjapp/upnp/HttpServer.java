@@ -163,7 +163,7 @@ public class HttpServer {
     }
 
     public int getPort() {
-	return port;
+        return server.getLocalPort();
     }
 	
 	
