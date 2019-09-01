@@ -150,7 +150,7 @@ public class HttpHeader {
 		return sb.toString();
 	}
 
-	public void copy(HttpHeader header) {
+	public final void copy(HttpHeader header) {
 		firstLine = header.getFirstLine();
 		headerFields = header.getHeaderFields();
 	}

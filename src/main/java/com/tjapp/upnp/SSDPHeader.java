@@ -41,6 +41,14 @@ public class SSDPHeader extends HttpHeader {
 	public boolean isResponse() {
 		return "HTTP".startsWith(getFirstParts()[0]);
 	}
+        
+        public long getMaxAge() {
+            String cacheControl = getHeader("cache-control");
+            if (cacheControl == null || !cacheControl.startsWith("max-age=")) {
+                return 0;
+            }
+            return Long.parseLong(cacheControl.split("=")[1]);
+        }
 
 	public static SSDPHeader fromString(String str) {
 		return new SSDPHeader(HttpHeader.fromString(str));

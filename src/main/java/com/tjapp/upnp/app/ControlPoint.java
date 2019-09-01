@@ -266,7 +266,7 @@ public class ControlPoint {
 	    if (scpd != null) {
 		List<UPnPAction> actions = scpd.getActions();
 		for (UPnPAction action : actions) {
-		    println("      * action -- " + action.getName());
+		    println("      * " + action.getName());
 		}
 	    }
 	}
