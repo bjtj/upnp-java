@@ -55,6 +55,10 @@ public class UPnPDeviceSession {
 	return device.getService(serviceType);
     }
 
+    public UPnPService getServiceRecursive(String serviceType) {
+	return device.getServiceRecursive(serviceType);
+    }
+
     public long lifetime() {
 	return (Clock.getTickMilli() - registerTick);
     }

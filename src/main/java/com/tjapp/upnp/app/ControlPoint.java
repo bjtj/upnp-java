@@ -102,17 +102,17 @@ public class ControlPoint {
 	    if (line.equals("h") || line.equals("help")) {
 		println("HELP");
 		println("===============");
-                println("- (Enter) -- Display selection");
-		println("- h|help -- Display help");
-		println("- q|quit -- Quit");
-		println("- search <search type> -- Send msearch");
-		println("- ls|list -- List devices");
-		println("- [0-9]+ -- Show device of the index");
-		println("- service <service name> -- Select service");
-		println("- action <action name> -- Select action");
-		println("- i|invoke -- Invoke action");
-		println("- subscribe -- Subscribe");
-		println("- unsubscribe -- Unsubscribe");
+                println("* (Enter) -- Display selection");
+		println("* h|help -- Display help");
+		println("* q|quit -- Quit");
+		println("* search <search type> -- Send msearch");
+		println("* ls|list -- List devices");
+		println("* [0-9]+ -- Show device of the index");
+		println("* service <service name> -- Select service");
+		println("* action <action name> -- Select action");
+		println("* i|invoke -- Invoke action");
+		println("* subscribe -- Subscribe");
+		println("* unsubscribe -- Unsubscribe");
 		println("");
 	    } else if (line.equals("q") || line.equals("quit")) {
 		break;
@@ -157,11 +157,11 @@ public class ControlPoint {
                 }
 	    } else if (line.equals("subscribe")) {
 		UPnPDeviceSession session = selection.getSession();
-		UPnPService service = session.getService(selection.getServiceType());
+		UPnPService service = session.getServiceRecursive(selection.getServiceType());
 		cp.subscribeEvent(session, service);
 	    } else if (line.equals("unsubscribe")) {
 		UPnPDeviceSession session = selection.getSession();
-		UPnPService service = session.getService(selection.getServiceType());
+		UPnPService service = session.getServiceRecursive(selection.getServiceType());
 		cp.unsubscribeEvent(session, service);
 	    } else if (line.matches("[0-9]+")) {
 		int idx = Integer.parseInt(line);
@@ -191,7 +191,7 @@ public class ControlPoint {
         UPnPActionRequest request = new UPnPActionRequest();
         request.setServiceType(selection.getServiceType());
         request.setActionName(selection.getActionName());
-        UPnPService service = selection.getSession().getService(selection.getServiceType());
+        UPnPService service = selection.getSession().getServiceRecursive(selection.getServiceType());
         request.setControlUrl(service.getControlUrl());
         UPnPAction action = service.getAction(selection.getActionName());
         List<UPnPActionArgument> argumentList = action.getArgumentList();
