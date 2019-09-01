@@ -58,6 +58,10 @@ public class UPnPStateVariable {
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 	}
+        
+        public boolean hasAllowedValueList() {
+            return allowedValueList != null && allowedValueList.size() > 0;
+        }
 
 	public List<String> getAllowedValueList() {
 		return allowedValueList;

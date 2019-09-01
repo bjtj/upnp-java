@@ -1,8 +1,6 @@
 package com.tjapp.upnp;
 
 import org.w3c.dom.*;
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
 
 public class UPnPActionArgument {
 	
@@ -21,6 +19,10 @@ public class UPnPActionArgument {
 	public String getRelatedStateVariable() {
 		return relatedStateVariable;
 	}
+        
+        public UPnPStateVariable getRelatedStateVariable(UPnPService service) {
+            return service.getScpd().getStateVariable(getRelatedStateVariable());
+        }
 
 	public void setRelatedStateVariable(String relatedStateVariable) {
 		this.relatedStateVariable = relatedStateVariable;
