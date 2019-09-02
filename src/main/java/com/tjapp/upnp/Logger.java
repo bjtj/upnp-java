@@ -9,7 +9,7 @@ public class Logger {
 	public final static LogWriter NULL_WRITER = new NullWriter();
 
 	private String tag;
-	private SimpleDateFormat sdf = new SimpleDateFormat("Y-MM-dd HH:mm:ss.S z");
+	private SimpleDateFormat sdf = new SimpleDateFormat("Y-MM-dd HH:mm:ss.SSS z");
 	private LogWriter writer = CONSOLE_WRITER;
 
 	private String format(String tag, String level, String msg) {

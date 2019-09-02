@@ -162,6 +162,7 @@ public class UPnPServer {
     public void stop() {
         timerThread.finish();
         timerThread = null;
+	ssdpReceiver.stop();
         httpServer.stop();
     }
 

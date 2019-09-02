@@ -173,9 +173,10 @@ public class ControlPoint {
 		}
 		UPnPDeviceSession session = sessions.get(idx);
 		selection.setSession(session);
-		printDeviceSession("[Selected] ", session);
+		printDeviceSession("[Selected] ", session, true);
 	    } else if (StringUtil.isEmpty(line)) {
-                println("-*- Selection -*-");
+                println("Selection");
+		println("===============");
 		println(selection.toString());
 	    } else {
 		println("ERR) Unknown command -- " + line);
@@ -208,8 +209,11 @@ public class ControlPoint {
                 request.setParameter(argument.getName(), param);
             }
         }
-        println("Invoke action");
+        println("Invoke action - '" + action.getName() + "'");
+	long tick = Clock.getTickMilli();
         UPnPActionResponse response = selection.getSession().invokeAction(request);
+	long dur = Clock.getTickMilli() - tick;
+	println("Action Response - " + dur + " ms.");
         Map<String, String> params = response.getParameters();
         Iterator<String> keys = params.keySet().iterator();
         while (keys.hasNext()) {
@@ -248,22 +252,22 @@ public class ControlPoint {
 	println("===============");
 	for (int i = 0; i < sessions.size(); i++) {
 	    UPnPDeviceSession session = sessions.get(i);
-	    printDeviceSession("[" + i + "] ", session);
+	    printDeviceSession("[" + i + "] ", session, false);
 	}
     }
     
-    private static void printDeviceSession(String prefix, UPnPDeviceSession session) {
+    private static void printDeviceSession(String prefix, UPnPDeviceSession session, boolean showActions) {
         UPnPDevice device = session.getDevice();
-        printDevice(prefix, device);
+        printDevice(prefix, device, showActions);
     }
 
-    private static void printDevice(String prefix, UPnPDevice device) {
-	println(prefix + device.getFriendlyName() + " (" + device.getUdn() + ")");        
+    private static void printDevice(String prefix, UPnPDevice device, boolean showActions) {
+	println(prefix + device.getFriendlyName() + " (" + device.getUdn() + ")");
 	List<UPnPService> services = device.getServiceList();
 	for (UPnPService service : services) {
 	    println("    + " + service.getServiceType());
 	    UPnPScpd scpd = service.getScpd();
-	    if (scpd != null) {
+	    if (showActions && scpd != null) {
 		List<UPnPAction> actions = scpd.getActions();
 		for (UPnPAction action : actions) {
 		    println("      * " + action.getName());
@@ -271,7 +275,7 @@ public class ControlPoint {
 	    }
 	}
         for (UPnPDevice child : device.getChildDevices()) {
-            printDevice(prefix, child);
+            printDevice(prefix, child, showActions);
         }
     }
 }
